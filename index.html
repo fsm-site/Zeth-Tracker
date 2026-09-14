@@ -264,6 +264,8 @@
   .contact-link{color:var(--brass-dark); font-weight:700; text-decoration:none;}
   .contact-link:hover{text-decoration:underline;}
   .lead-remark{font-size:11px; font-weight:700; color:var(--brass-dark);}
+  .lead-notes-cell{max-width:180px; font-size:12.5px; color:var(--ink-soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .lead-notes-cell .empty{color:var(--ink-soft); opacity:.5;}
   .move-badge{display:inline-block; border:0; border-radius:999px; padding:4px 10px; font-size:11px; font-weight:700; line-height:1; white-space:nowrap;}
   .move-push{background:#dceee4; color:#237044;}
   .move-pull{background:#dce7f5; color:#2b5f96;}
@@ -2087,6 +2089,10 @@ function escapeHtml(s){
   const d = document.createElement('div');
   d.textContent = s == null ? '' : String(s);
   return d.innerHTML;
+}
+function truncateText(s, max){
+  const str = s == null ? '' : String(s);
+  return str.length > max ? str.slice(0, max).trimEnd() + '…' : str;
 }
 function fmtDate(d){
   if(!d) return '';
@@ -4536,10 +4542,10 @@ async function renderLeadTable(id){
   if(sortSelect) sortSelect.value = sortMode;
   listEl.innerHTML = sorted.length ? `
     <div class="table-scroll"><table class="data-table"><thead><tr>
-      <th>Contact Started</th><th>Days Since Contact Started</th><th>Name of Lead</th><th>Source</th><th>Proposed APE</th><th>Status</th>${leadViewState[id] === 'nurture' ? '<th>Focus</th>' : ''}<th>Next Move</th><th>Remarks</th><th></th>
+      <th>Contact Started</th><th>Days Since Contact Started</th><th>Name of Lead</th><th>Source</th><th>Proposed APE</th><th>Status</th>${leadViewState[id] === 'nurture' ? '<th>Focus</th>' : ''}<th>Next Move</th><th>Remarks</th><th>Notes</th><th></th>
     </tr></thead><tbody>${sorted.map(row => {
       const idx = entries.indexOf(row);
-      return `<tr><td>${leadDateLabel(row)}</td><td>${leadDaysSince(row)}</td><td><button class="lead-name-link" onclick="openLeadDetails('${id}', ${idx})">${escapeHtml(row.name || 'Unnamed lead')}</button></td><td>${escapeHtml(row.source || '')}</td><td class="num">${fmtCurrency(parseCurrency(row.ape))}</td><td><span class="status-pill status-${(row.status || '').replace(' ','\\ ')}">${escapeHtml(row.status || '')}</span></td>${leadViewState[id] === 'nurture' ? `<td>${nurtureFocusHtml(row)}</td>` : ''}<td>${moveBadge(nextLeadMove(row.lastMove))}</td><td class="lead-remark">${leadRemark(row.status)}</td><td><button class="row-del" onclick="editLeadRow('${id}', ${idx})">Edit</button>&nbsp;&nbsp;<button class="row-del" onclick="duplicateLeadRow('${id}', ${idx})">Duplicate</button>&nbsp;&nbsp;<button class="row-del" onclick="deleteEntry('${id}', ${idx})">Remove</button></td></tr>`;
+      return `<tr><td>${leadDateLabel(row)}</td><td>${leadDaysSince(row)}</td><td><button class="lead-name-link" onclick="openLeadDetails('${id}', ${idx})">${escapeHtml(row.name || 'Unnamed lead')}</button></td><td>${escapeHtml(row.source || '')}</td><td class="num">${fmtCurrency(parseCurrency(row.ape))}</td><td><span class="status-pill status-${(row.status || '').replace(' ','\\ ')}">${escapeHtml(row.status || '')}</span></td>${leadViewState[id] === 'nurture' ? `<td>${nurtureFocusHtml(row)}</td>` : ''}<td>${moveBadge(nextLeadMove(row.lastMove))}</td><td class="lead-remark">${leadRemark(row.status)}</td><td class="lead-notes-cell" title="${escapeHtml(row.notes || '')}">${row.notes ? escapeHtml(truncateText(row.notes, 40)) : '<span class="empty">—</span>'}</td><td><button class="row-del" onclick="editLeadRow('${id}', ${idx})">Edit</button>&nbsp;&nbsp;<button class="row-del" onclick="duplicateLeadRow('${id}', ${idx})">Duplicate</button>&nbsp;&nbsp;<button class="row-del" onclick="deleteEntry('${id}', ${idx})">Remove</button></td></tr>`;
     }).join('')}</tbody></table></div>` : '<div class="empty">No leads yet — add your first lead above.</div>';
   await renderGroupCount(idToGroup(id));
 }
