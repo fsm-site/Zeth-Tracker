@@ -507,6 +507,92 @@
     font-size:12px;
   }
   table.data-table .row-del:hover{ color:var(--red); }
+  .row-menu{ position:relative; display:inline-block; }
+  .row-menu > summary{
+    list-style:none;
+    cursor:pointer;
+    width:30px;
+    height:26px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:7px;
+    color:var(--ink-soft);
+    font-size:18px;
+    font-weight:700;
+    line-height:1;
+    user-select:none;
+  }
+  .row-menu > summary::-webkit-details-marker{ display:none; }
+  .row-menu > summary::marker{ content:''; }
+  .row-menu > summary:hover{ background:var(--stripe); color:var(--ink); }
+  .row-menu[open] > summary{ background:var(--stripe); color:var(--ink); }
+  .row-menu-list{
+    position:absolute;
+    right:0;
+    top:calc(100% + 4px);
+    z-index:20;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:10px;
+    box-shadow:0 10px 24px rgba(23,35,49,.16);
+    padding:6px;
+    display:flex;
+    flex-direction:column;
+    min-width:126px;
+  }
+  .row-menu-list button{
+    all:unset;
+    cursor:pointer;
+    padding:8px 11px;
+    border-radius:6px;
+    font-size:13px;
+    color:var(--ink);
+    white-space:nowrap;
+  }
+  .row-menu-list button:hover{ background:var(--stripe); }
+  .row-menu-list button.danger{ color:var(--red); }
+  .row-menu-list button.danger:hover{ background:rgba(192,57,43,.08); }
+  .emoji-picker-wrap{ position:relative; display:inline-block; margin-left:6px; vertical-align:middle; }
+  .emoji-picker-btn{
+    all:unset;
+    cursor:pointer;
+    font-size:14px;
+    padding:2px 6px;
+    border-radius:6px;
+    line-height:1.4;
+  }
+  .emoji-picker-btn:hover{ background:var(--stripe); }
+  .emoji-picker-pop{
+    display:none;
+    flex-wrap:wrap;
+    gap:2px;
+    position:absolute;
+    z-index:30;
+    top:calc(100% + 4px);
+    left:0;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:10px;
+    box-shadow:0 10px 24px rgba(23,35,49,.16);
+    padding:8px;
+    width:224px;
+    max-height:170px;
+    overflow-y:auto;
+  }
+  .emoji-picker-pop.open{ display:flex; }
+  .emoji-picker-pop button{
+    all:unset;
+    cursor:pointer;
+    font-size:17px;
+    width:27px;
+    height:27px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:6px;
+  }
+  .emoji-picker-pop button:hover{ background:var(--stripe); }
   .status-pill{
     display:inline-block;
     font-size:11.5px;
@@ -2085,6 +2171,39 @@ function renderBoxGrid(){
 const leafMount = document.getElementById('leaf-mount');
 const statisticsMount = document.getElementById('statistics-mount');
 
+/* ---------- lightweight emoji picker, attachable to any text/textarea field ---------- */
+const EMOJI_SET = [
+  "😀","😃","😄","😁","😆","😅","🤣","😂","🙂","🙃","😉","😊","😇","🥰","😍","😘",
+  "😋","😜","🤪","😎","🤩","🥳","😐","😴","🤔","🤗","🙄","😬","😢","😭","😡","🤯",
+  "🥺","😱","👍","👎","👏","🙏","💪","🎉","✅","❌","❤️","🔥","⭐","💡","📌","📅",
+  "💬","📞","✉️","🚀","💰","🏆","😀","👌","🤝","🙌","😅","💯","⏰","📈","🎯","✨"
+];
+function emojiButtonHtml(targetId){
+  return `<span class="emoji-picker-wrap">
+    <button type="button" class="emoji-picker-btn" title="Insert emoji" onclick="toggleEmojiPicker(this, event)">😊</button>
+    <div class="emoji-picker-pop">${EMOJI_SET.map(e => `<button type="button" onclick="insertEmoji('${targetId}', '${e}', event)">${e}</button>`).join('')}</div>
+  </span>`;
+}
+function toggleEmojiPicker(btn, event){
+  if(event) event.stopPropagation();
+  const pop = btn.nextElementSibling;
+  const isOpen = pop.classList.contains('open');
+  document.querySelectorAll('.emoji-picker-pop.open').forEach(p => p.classList.remove('open'));
+  if(!isOpen) pop.classList.add('open');
+}
+function insertEmoji(targetId, emoji, event){
+  if(event) event.stopPropagation();
+  const field = document.getElementById(targetId);
+  document.querySelectorAll('.emoji-picker-pop.open').forEach(p => p.classList.remove('open'));
+  if(!field) return;
+  const start = field.selectionStart ?? field.value.length;
+  const end = field.selectionEnd ?? field.value.length;
+  field.value = field.value.slice(0, start) + emoji + field.value.slice(end);
+  const pos = start + emoji.length;
+  field.focus();
+  if(field.setSelectionRange) field.setSelectionRange(pos, pos);
+}
+
 function escapeHtml(s){
   const d = document.createElement('div');
   d.textContent = s == null ? '' : String(s);
@@ -2154,7 +2273,7 @@ function buildGenericPanel(item, groupLabel){
           <input id="${item.id}-contact-link" type="url" placeholder="https://...">
         </div>
         <div class="full">
-          <label for="${item.id}-notes">Notes (optional)</label>
+          <label for="${item.id}-notes">Notes (optional) ${emojiButtonHtml(item.id + '-notes')}</label>
           <textarea id="${item.id}-notes" placeholder="Any details worth remembering"></textarea>
         </div>
       </div>
@@ -2281,7 +2400,7 @@ function buildLeadPanel(item, groupLabel, config){
   const fields = config.columns.map(col => {
     if(col.type === 'select') return `<div><label>${col.label}</label><select id="${item.id}-f-${col.key}"><option value="">—</option>${col.options.map(option => `<option value="${option}">${option}</option>`).join('')}</select></div>`;
     if(col.type === 'checklist') return `<div><label>${col.label}</label><select id="${item.id}-f-${col.key}" multiple size="1" title="Select one or more needs">${col.options.map(option => `<option value="${option}">${option}</option>`).join('')}</select></div>`;
-    if(col.type === 'textarea') return `<div class="span4"><label>${col.label}</label><textarea id="${item.id}-f-${col.key}" rows="3" placeholder="${col.placeholder || ''}"></textarea></div>`;
+    if(col.type === 'textarea') return `<div class="span4"><label>${col.label} ${emojiButtonHtml(item.id + '-f-' + col.key)}</label><textarea id="${item.id}-f-${col.key}" rows="3" placeholder="${col.placeholder || ''}"></textarea></div>`;
     return `<div><label>${col.label}</label><input id="${item.id}-f-${col.key}" type="${col.type === 'email' ? 'email' : col.type === 'url' ? 'url' : col.type === 'date' ? 'date' : col.type === 'number' ? 'number' : 'text'}" placeholder="${col.placeholder || ''}"></div>`;
   }).join('');
   el.innerHTML = `
@@ -2314,7 +2433,6 @@ function buildLeadPanel(item, groupLabel, config){
           <input id="${item.id}-search" type="search" placeholder="Name or keyword" onkeydown="if(event.key === 'Enter') setSearch('${item.id}')" style="width:150px; padding:6px 8px; font-size:12.5px;">
           <button class="primary" onclick="setSearch('${item.id}')" style="padding:6px 10px; font-size:12px;">Search</button>
         </label>
-        <button class="clear-link" onclick="clearEntries('${item.id}')">Clear all</button>
       </div>
     </div>
     <div id="${item.id}-list"></div>
@@ -2400,7 +2518,7 @@ function buildRewardsPanel(item, groupLabel){
           <input id="${item.id}-value" type="text" placeholder="e.g. ₱5,000 or 3">
         </div>
         <div class="full">
-          <label for="${item.id}-notes">Notes (optional)</label>
+          <label for="${item.id}-notes">Notes (optional) ${emojiButtonHtml(item.id + '-notes')}</label>
           <textarea id="${item.id}-notes" placeholder="Any details worth remembering"></textarea>
         </div>
       </div>
@@ -4545,7 +4663,7 @@ async function renderLeadTable(id){
       <th>Contact Started</th><th>Days Since Contact Started</th><th>Name of Lead</th><th>Source</th><th>Proposed APE</th><th>Status</th>${leadViewState[id] === 'nurture' ? '<th>Focus</th>' : ''}<th>Next Move</th><th>Remarks</th><th>Notes</th><th></th>
     </tr></thead><tbody>${sorted.map(row => {
       const idx = entries.indexOf(row);
-      return `<tr><td>${leadDateLabel(row)}</td><td>${leadDaysSince(row)}</td><td><button class="lead-name-link" onclick="openLeadDetails('${id}', ${idx})">${escapeHtml(row.name || 'Unnamed lead')}</button></td><td>${escapeHtml(row.source || '')}</td><td class="num">${fmtCurrency(parseCurrency(row.ape))}</td><td><span class="status-pill status-${(row.status || '').replace(' ','\\ ')}">${escapeHtml(row.status || '')}</span></td>${leadViewState[id] === 'nurture' ? `<td>${nurtureFocusHtml(row)}</td>` : ''}<td>${moveBadge(nextLeadMove(row.lastMove))}</td><td class="lead-remark">${leadRemark(row.status)}</td><td class="lead-notes-cell" title="${escapeHtml(row.notes || '')}">${row.notes ? escapeHtml(truncateText(row.notes, 40)) : '<span class="empty">—</span>'}</td><td><button class="row-del" onclick="editLeadRow('${id}', ${idx})">Edit</button>&nbsp;&nbsp;<button class="row-del" onclick="duplicateLeadRow('${id}', ${idx})">Duplicate</button>&nbsp;&nbsp;<button class="row-del" onclick="deleteEntry('${id}', ${idx})">Remove</button></td></tr>`;
+      return `<tr><td>${leadDateLabel(row)}</td><td>${leadDaysSince(row)}</td><td><button class="lead-name-link" onclick="openLeadDetails('${id}', ${idx})">${escapeHtml(row.name || 'Unnamed lead')}</button></td><td>${escapeHtml(row.source || '')}</td><td class="num">${fmtCurrency(parseCurrency(row.ape))}</td><td><span class="status-pill status-${(row.status || '').replace(' ','\\ ')}">${escapeHtml(row.status || '')}</span></td>${leadViewState[id] === 'nurture' ? `<td>${nurtureFocusHtml(row)}</td>` : ''}<td>${moveBadge(nextLeadMove(row.lastMove))}</td><td class="lead-remark">${leadRemark(row.status)}</td><td class="lead-notes-cell" title="${escapeHtml(row.notes || '')}">${row.notes ? escapeHtml(truncateText(row.notes, 40)) : '<span class="empty">—</span>'}</td><td><details class="row-menu"><summary>⋮</summary><div class="row-menu-list"><button onclick="editLeadRow('${id}', ${idx})">Edit</button><button onclick="duplicateLeadRow('${id}', ${idx})">Duplicate</button><button class="danger" onclick="deleteEntry('${id}', ${idx})">Remove</button></div></details></td></tr>`;
     }).join('')}</tbody></table></div>` : '<div class="empty">No leads yet — add your first lead above.</div>';
   await renderGroupCount(idToGroup(id));
 }
@@ -4917,7 +5035,7 @@ async function renderTable(id){
       }
       return `<td>${escapeHtml(v || '')}</td>`;
     }).join('');
-    return `<tr>${cells}<td><button class="row-del" onclick="editTableRow('${id}', ${idx})">Edit</button>&nbsp;&nbsp;<button class="row-del" onclick="deleteEntry('${id}', ${idx})">Remove</button></td></tr>`;
+    return `<tr>${cells}<td><details class="row-menu"><summary>⋮</summary><div class="row-menu-list"><button onclick="editTableRow('${id}', ${idx})">Edit</button><button class="danger" onclick="deleteEntry('${id}', ${idx})">Remove</button></div></details></td></tr>`;
   }).join('');
 
   listEl.innerHTML = `
@@ -5303,6 +5421,21 @@ function renderTodayBadge(){
   const d = new Date();
   el.textContent = 'Today · ' + d.toLocaleDateString('en-US', { weekday:'short', year:'numeric', month:'short', day:'numeric' });
 }
+
+document.addEventListener('toggle', (e) => {
+  if(!e.target.matches('.row-menu')) return;
+  if(e.target.open){
+    document.querySelectorAll('.row-menu[open]').forEach(other => { if(other !== e.target) other.open = false; });
+  }
+}, true);
+document.addEventListener('click', (e) => {
+  document.querySelectorAll('.row-menu[open]').forEach(menu => {
+    if(!menu.contains(e.target)) menu.open = false;
+  });
+  document.querySelectorAll('.emoji-picker-pop.open').forEach(pop => {
+    if(!pop.parentElement.contains(e.target)) pop.classList.remove('open');
+  });
+});
 
 window.initApp = async function initApp(){
   restoreViewState();
