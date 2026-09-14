@@ -1205,6 +1205,31 @@
   .whats-next-empty{color:var(--ink-soft); font-size:12px; padding:6px 0;}
   @media(max-width:850px){.whats-next-workspace{grid-template-columns:1fr;}.whats-next-side{grid-template-columns:repeat(2,minmax(0,1fr));}.whats-next-side .whats-next-card:last-child{grid-column:1 / -1;}}
   @media(max-width:560px){.whats-next-head{display:block;}.whats-next-calendar{padding:10px;}.whats-next-weekdays,.whats-next-calendar-grid{gap:3px;}.whats-next-day{min-height:54px; padding:5px;}.whats-next-day-indicators{margin-top:8px;}.whats-next-day-number{font-size:11px;}.whats-next-side{grid-template-columns:1fr;}.whats-next-side .whats-next-card:last-child{grid-column:auto;}.whats-next-add-row{flex-wrap:wrap;}.whats-next-add-row input,.whats-next-add-row select{flex:1 1 120px;}.whats-next-add-row button{flex:0 0 auto;}}
+
+  /* --- Daily To-Do (checklist + output log) --- */
+  .daily-checklist-panel{max-width:1180px;}
+  .daily-date-nav{display:flex; align-items:center; gap:12px; margin-bottom:18px; flex-wrap:wrap;}
+  .daily-date-btn{all:unset; cursor:pointer; padding:7px 12px; border:1px solid var(--line); border-radius:999px; font-size:12px; font-weight:700; color:var(--ink-soft);}
+  .daily-date-btn:hover{border-color:var(--brass); color:var(--brass-dark);}
+  .daily-date-label{font-size:13px; font-weight:700; color:var(--navy);}
+  .daily-checklist-grid{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:16px; align-items:start; margin-bottom:16px;}
+  .daily-check-card h2{margin:0 0 4px; color:var(--navy); font-size:16px; display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  .daily-check-count{font-size:11.5px; font-weight:700; color:var(--brass-dark); background:var(--brass-soft); padding:2px 9px; border-radius:999px;}
+  .daily-checklist-list{display:grid; gap:2px; margin-top:10px;}
+  .daily-check-row{display:flex; align-items:center; gap:9px; padding:7px 0; border-bottom:1px solid var(--line); font-size:13px; cursor:pointer;}
+  .daily-check-row:last-child{border-bottom:0;}
+  .daily-check-row input[type="checkbox"]{width:auto; margin:0; accent-color:var(--brass); flex-shrink:0;}
+  .daily-check-row input[type="text"]{border:none; border-bottom:1px solid var(--line); border-radius:0; padding:4px 2px; font-size:13px; background:transparent;}
+  .daily-check-row input[type="text"]:focus{outline:none; border-bottom-color:var(--brass);}
+  .daily-check-row.done span{text-decoration:line-through; color:var(--ink-soft);}
+  .daily-pillars{grid-column:1 / -1;}
+  .daily-log-card{margin-top:4px;}
+  .daily-empty{color:var(--ink-soft); font-size:12.5px; padding:10px 0;}
+  .link-btn{all:unset; cursor:pointer; color:var(--brass-dark); font-weight:700; font-size:13px;}
+  .link-btn:hover{text-decoration:underline;}
+  tr.active-row td{background:var(--brass-soft);}
+  @media(max-width:850px){.daily-checklist-grid{grid-template-columns:1fr;}}
+  @media(max-width:560px){.daily-date-nav{gap:8px;}.daily-date-btn{padding:6px 10px; font-size:11px;}}
   .prufin-controls-row{display:flex; flex-wrap:wrap; align-items:center; gap:14px; margin-bottom:16px;}
   .prufin-controls-label{display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:700; color:var(--ink-soft);}
   .prufin-controls-label select{width:auto; padding:7px 10px; font-size:13px; border-radius:8px; border:1px solid var(--line); font-family:inherit;}
@@ -1633,6 +1658,9 @@ const GROUPS = [
   ]},
   { id: "whats-next-group", label: "WHAT'S NEXT", items: [
     { id: "whats-next", label: "WHAT'S NEXT" },
+  ]},
+  { id: "daily-group", label: "DAILY TO-DO", items: [
+    { id: "daily-checklist", label: "DAILY TO-DO" },
   ]},
 ];
 
@@ -4242,6 +4270,194 @@ async function whatsNextQuickAdd(type){
   await whatsNextUpdateDay(dateKey, day => { day.events.push({ title:title.trim(), time, notes:'', id:Date.now() + Math.random() }); });
 }
 
+/* ================= DAILY TO-DO (checklist + output log) =================
+   Fixed daily checklist covering branding, leads, and client servicing,
+   plus 3 daily pillars. Every day's state is saved so the panel doubles as
+   a running record of daily output — nothing here is user-defined the way
+   WHAT'S NEXT's categories are. */
+const DAILY_CHECKLIST_SECTIONS = [
+  { key:'branding', icon:'🧲', title:'DAILY BRANDING', items:[
+    'Post 1 valuable content',
+    'Post Stories',
+    'Share client wins / testimonials',
+    'Share educational insurance content',
+    'Show personal / behind-the-scenes content',
+    'Engage with audience',
+    'Reply to comments & DMs',
+    'Maintain consistent brand presence',
+  ]},
+  { key:'leads', icon:'💬', title:'LEADS', items:[
+    'Check new leads',
+    'Respond to inquiries',
+    'Start conversations',
+    'Follow up leads',
+    'Send assessment',
+    'Qualify leads',
+    'Book / conduct consultations',
+    'Send proposals',
+    'Handle objections',
+    'Follow up pending decisions',
+    'Update lead tracker',
+  ]},
+  { key:'servicing', icon:'🤝', title:'CLIENT SERVICING', items:[
+    'Check client messages',
+    'Respond to concerns',
+    'Policy servicing',
+    'Policy reviews',
+    'Claims assistance',
+    'HMO assistance',
+    'Follow up pending requirements',
+    'Client check-ins',
+    'Renewal reminders',
+    'Ask for referrals',
+    'Update client servicing tracker',
+  ]},
+];
+let dailySelectedDate = whatsNextDateKey(new Date());
+
+function dailyBlankDay(){
+  const day = { pillars:[0,1,2].map(() => ({ text:'', done:false })) };
+  DAILY_CHECKLIST_SECTIONS.forEach(section => { day[section.key] = section.items.map(() => false); });
+  return day;
+}
+function dailyNormalizeDay(day){
+  const clean = { ...dailyBlankDay(), ...(day || {}) };
+  DAILY_CHECKLIST_SECTIONS.forEach(section => {
+    const saved = Array.isArray(clean[section.key]) ? clean[section.key] : [];
+    clean[section.key] = section.items.map((_, idx) => Boolean(saved[idx]));
+  });
+  clean.pillars = [0,1,2].map(i => ({ text:clean.pillars?.[i]?.text || '', done:Boolean(clean.pillars?.[i]?.done) }));
+  return clean;
+}
+async function dailyRecord(){
+  const records = await getEntries('daily-checklist');
+  if(!records[0]) records.push({ id:'daily', days:{} });
+  records[0].days = records[0].days || {};
+  return { records, record:records[0] };
+}
+async function dailySave(record, records){
+  return saveEntries('daily-checklist', records || [record]);
+}
+function dailyProgress(day){
+  const all = DAILY_CHECKLIST_SECTIONS.flatMap(section => day[section.key]);
+  return { done: all.filter(Boolean).length, total: all.length };
+}
+async function dailyUpdateDay(dateKey, updater){
+  const { record, records } = await dailyRecord();
+  const day = dailyNormalizeDay(record.days[dateKey]);
+  updater(day);
+  record.days[dateKey] = day;
+  await dailySave(record, records);
+  await renderDailyChecklistPanel();
+  await renderAllCounts();
+}
+async function dailyToggleItem(dateKey, sectionKey, index){
+  await dailyUpdateDay(dateKey, day => { day[sectionKey][index] = !day[sectionKey][index]; });
+}
+async function dailyTogglePillar(dateKey, index){
+  await dailyUpdateDay(dateKey, day => { day.pillars[index].done = !day.pillars[index].done; });
+}
+async function dailySavePillars(dateKey){
+  const inputs = [...document.querySelectorAll('.daily-pillars input[type="text"]')];
+  await dailyUpdateDay(dateKey, day => {
+    day.pillars = inputs.map((input, i) => ({ text:input.value.trim(), done:day.pillars[i]?.done || false }));
+  });
+}
+async function dailyChangeDate(offset){
+  const d = new Date(dailySelectedDate + 'T00:00:00');
+  d.setDate(d.getDate() + offset);
+  dailySelectedDate = whatsNextDateKey(d);
+  await renderDailyChecklistPanel();
+}
+async function dailyGoToday(){
+  dailySelectedDate = whatsNextDateKey(new Date());
+  await renderDailyChecklistPanel();
+}
+async function dailyJumpToDate(key){
+  dailySelectedDate = key;
+  await renderDailyChecklistPanel();
+  document.querySelector('.daily-checklist-panel')?.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+function dailyDateNav(dateKey){
+  const isToday = dateKey === whatsNextDateKey(new Date());
+  return `<div class="daily-date-nav">
+    <button class="daily-date-btn" onclick="dailyChangeDate(-1)">← Prev day</button>
+    <div class="daily-date-label">${whatsNextDateLabel(dateKey)}${isToday ? ' · Today' : ''}</div>
+    <button class="daily-date-btn" onclick="dailyChangeDate(1)">Next day →</button>
+    ${!isToday ? `<button class="daily-date-btn" onclick="dailyGoToday()">Jump to today</button>` : ''}
+  </div>`;
+}
+function dailyChecklistSectionHtml(section, day, dateKey){
+  const rows = section.items.map((label, idx) => `
+    <label class="daily-check-row ${day[section.key][idx] ? 'done' : ''}">
+      <input type="checkbox" ${day[section.key][idx] ? 'checked' : ''} onchange="dailyToggleItem('${dateKey}','${section.key}',${idx})">
+      <span>${escapeHtml(label)}</span>
+    </label>`).join('');
+  const doneCount = day[section.key].filter(Boolean).length;
+  return `<section class="daily-check-card card">
+    <h2>${section.icon} ${section.title} <span class="daily-check-count">${doneCount}/${section.items.length}</span></h2>
+    <div class="daily-checklist-list">${rows}</div>
+  </section>`;
+}
+function dailyPillarsHtml(day, dateKey){
+  const rows = day.pillars.map((p, idx) => `
+    <div class="daily-check-row ${p.done ? 'done' : ''}">
+      <input type="checkbox" ${p.done ? 'checked' : ''} onchange="dailyTogglePillar('${dateKey}',${idx})">
+      <input type="text" value="${escapeHtml(p.text)}" placeholder="Pillar ${idx + 1}" onblur="dailySavePillars('${dateKey}')">
+    </div>`).join('');
+  return `<section class="daily-check-card card daily-pillars">
+    <h2>🔥 Your 3 Daily Pillars</h2>
+    <div class="sub">The 3 things that matter most today.</div>
+    <div class="daily-checklist-list">${rows}</div>
+  </section>`;
+}
+function dailyRecordsLogHtml(record){
+  const days = Object.keys(record.days || {}).sort((a, b) => b.localeCompare(a));
+  if(!days.length) return '<div class="daily-empty">No daily records yet — check off today\'s tasks to start your log.</div>';
+  const rows = days.map(key => {
+    const day = dailyNormalizeDay(record.days[key]);
+    const { done, total } = dailyProgress(day);
+    const pct = total ? Math.round((done / total) * 100) : 0;
+    const pillarsText = day.pillars.map(p => p.text).filter(Boolean).join(' · ') || '—';
+    return `<tr class="${key === dailySelectedDate ? 'active-row' : ''}">
+      <td><button class="link-btn" onclick="dailyJumpToDate('${key}')">${fmtDate(key)}</button></td>
+      <td class="num">${day.branding.filter(Boolean).length}/${day.branding.length}</td>
+      <td class="num">${day.leads.filter(Boolean).length}/${day.leads.length}</td>
+      <td class="num">${day.servicing.filter(Boolean).length}/${day.servicing.length}</td>
+      <td class="num">${done}/${total} (${pct}%)</td>
+      <td>${escapeHtml(pillarsText)}</td>
+    </tr>`;
+  }).join('');
+  return `<div class="statistics-table-wrap"><table class="statistics-table">
+    <thead><tr><th>Date</th><th>Branding</th><th>Leads</th><th>Servicing</th><th>Total</th><th>Daily Pillars</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table></div>`;
+}
+async function renderDailyChecklistPanel(){
+  const panel = document.getElementById('leaf-daily-checklist');
+  if(!panel) return;
+  const { record } = await dailyRecord();
+  const day = dailyNormalizeDay(record.days[dailySelectedDate]);
+  const { done, total } = dailyProgress(day);
+  panel.innerHTML = `<div class="daily-checklist-panel">
+    <button class="back-link" onclick="backToGrid()">← DAILY TO-DO</button>
+    <div class="whats-next-head">
+      <div><h1>DAILY TO-DO</h1><div class="sub">Your daily checklist — then a running record of your output.</div></div>
+      <div class="whats-next-today">${done}/${total} done · ${whatsNextDateKey(new Date()) === dailySelectedDate ? 'Today' : whatsNextDateLabel(dailySelectedDate)}</div>
+    </div>
+    ${dailyDateNav(dailySelectedDate)}
+    <div class="daily-checklist-grid">
+      ${DAILY_CHECKLIST_SECTIONS.map(section => dailyChecklistSectionHtml(section, day, dailySelectedDate)).join('')}
+      ${dailyPillarsHtml(day, dailySelectedDate)}
+    </div>
+    <section class="daily-check-card card daily-log-card">
+      <h2>📋 Records of Daily Output</h2>
+      <div class="sub">A log of every day you've checked off, most recent first.</div>
+      ${dailyRecordsLogHtml(record)}
+    </section>
+  </div>`;
+}
+
 GROUPS.forEach(g => {
   g.items.forEach(item => {
     if(item.url) return; // link-only items (Sites) have no leaf panel
@@ -4259,6 +4475,10 @@ GROUPS.forEach(g => {
       panel = document.createElement('div');
       panel.className = 'leaf-view';
       panel.id = 'leaf-whats-next';
+    }else if(item.id === 'daily-checklist'){
+      panel = document.createElement('div');
+      panel.className = 'leaf-view';
+      panel.id = 'leaf-daily-checklist';
     }else if(item.id === 'pru-servicing'){
       panel = buildServicingPanel(item, g.label);
     }else if(tableConfig && tableConfig.lead){
@@ -5457,6 +5677,7 @@ window.initApp = async function initApp(){
   await Promise.all(allLeafIds().map(id => renderList(id)));
   await renderAllCounts();
   await renderWhatsNextPanel();
+  await renderDailyChecklistPanel();
 
   await seedIfEmpty();
   await migrateExistingIssuedLeads();
