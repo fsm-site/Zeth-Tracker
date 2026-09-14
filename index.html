@@ -2343,7 +2343,7 @@ async function renderRewardsPanel(){
   const mount = document.getElementById('rewards-mount');
   if(!mount) return; // panel not built yet
   const clients = await getEntries('pru-clients');
-  const issued = clients.filter(r => r.status === 'Issued');
+  const issued = clients.filter(r => r.status === 'Issued' && (r.clientType || 'Own') !== 'Adopted');
   const fypAsOfDate = new Date();
 
   // Achievement Ladder runs on Issued APE except MDRT, which uses paid FYP.
@@ -3223,7 +3223,7 @@ async function openRewardBreakdown(kind, key){
   const list = document.getElementById('client-fyp-list');
   if(!modal || !list) return;
   const clients = await getEntries('pru-clients');
-  const issued = clients.filter(row => row.status === 'Issued');
+  const issued = clients.filter(row => row.status === 'Issued' && (row.clientType || 'Own') !== 'Adopted');
   const reward = [...ACHIEVEMENTS, ...TRAVEL_INCENTIVES, ...MDRT_MEETINGS].find(item => item.key === key);
   const isFyp = kind === 'mdrt' || key === 'mdrt';
   const fypAsOfDate = new Date();
@@ -4087,7 +4087,7 @@ async function renderStatisticsPanel(){
   const adoptedApe = totalApe(adopted);
   const combinedApe = ownApe + adoptedApe;
   const ownShare = combinedApe ? (ownApe / combinedApe) * 360 : 0;
-  const rewardApeRows = rows.filter(row => row.statsDate.getFullYear() === 2026);
+  const rewardApeRows = own.filter(row => row.statsDate.getFullYear() === 2026);
   const rewardApe = totalApe(rewardApeRows);
   const rewardLadder = ACHIEVEMENTS.filter(item => item.basis !== 'fyp').sort((a, b) => a.threshold - b.threshold);
   const achievedRewards = rewardLadder.filter(item => rewardApe >= item.threshold);
