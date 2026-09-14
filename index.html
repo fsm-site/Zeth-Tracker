@@ -678,6 +678,24 @@
   }
   .achv-card.done .togo-line strong,
   .travel-card.done .togo-line strong{ color:var(--brass); }
+
+  .strategy-line{
+    font-size:12.5px;
+    line-height:1.5;
+    color:var(--ink-soft);
+    margin-top:10px;
+    padding:10px 12px;
+    border-radius:10px;
+    background:var(--stripe);
+  }
+  .strategy-line strong{ color:var(--navy); }
+  .strategy-line.strategy-done{
+    background:linear-gradient(0deg,#fff,var(--brass-soft) 180%);
+    color:var(--ink);
+  }
+  .strategy-line.strategy-done strong{ color:var(--brass-dark); }
+  .strategy-line.strategy-missed{ background:var(--brass-soft); }
+
   .travel-grid{
     display:grid;
     grid-template-columns:1fr 1fr;
@@ -1943,6 +1961,8 @@ const ACHIEVEMENTS = [
   { key: "mdrt",     label: "Million Dollar Round Table (MDRT)",      threshold: 3518400, basis: "fyp" },
 ];
 const MDRT_THRESHOLD = 3518400;
+/* 2026 Achievement Ladder and MDRT qualification both run through year-end. */
+const YEAR_END_DEADLINE = "2026-12-31";
 /* South Korea travel only counts APE from clients Issued within this window —
    Jan–Jul 2026 production does not count toward this incentive. */
 const SKOREA_WINDOW_MONTHS = ["August","September","October","November"];
@@ -2402,6 +2422,36 @@ function togoLine(remaining, done, doneLabel){
     : `<div class="togo-line">To-Go<strong>${fmtCurrency(remaining)}</strong></div>`;
 }
 
+// How many months remain to hit a deadline, counting the current month
+// as long as some of it is still left. Always at least 1 while time remains.
+function monthsRemainingUntil(deadlineStr){
+  const now = new Date();
+  const deadline = new Date(deadlineStr + 'T23:59:59');
+  if(deadline <= now) return 0;
+  const months = (deadline.getFullYear() - now.getFullYear()) * 12 + (deadline.getMonth() - now.getMonth()) + 1;
+  return Math.max(1, months);
+}
+
+const REWARD_DONE_MESSAGES = [
+  "already hit! Outstanding work — keep the momentum going and stack more wins before the deadline.",
+  "already hit! Target smashed — your consistency is paying off, so keep showing up and raise the bar even higher.",
+  "already hit! Goal achieved — celebrate this win, then set your sights on the next milestone. You clearly have what it takes.",
+  "already hit! This is what discipline looks like. Protect this pace and finish the year even stronger.",
+];
+
+function strategyHtml(remaining, deadlineStr, done, unit){
+  if(done){
+    const msg = REWARD_DONE_MESSAGES[Math.floor(Math.random() * REWARD_DONE_MESSAGES.length)];
+    return `<div class="strategy-line strategy-done">🎉 <strong>Target ${msg}</strong></div>`;
+  }
+  const months = monthsRemainingUntil(deadlineStr);
+  if(months <= 0){
+    return `<div class="strategy-line strategy-missed"><strong>Window closed —</strong> carry the ${fmtCurrency(remaining)} shortfall into your next goal.</div>`;
+  }
+  const perMonth = remaining / months;
+  return `<div class="strategy-line"><strong>Strategy:</strong> Close about <strong>${fmtCurrency(perMonth)} ${unit}/month</strong> for the next ${months} month${months === 1 ? '' : 's'} to hit this before ${fmtDate(deadlineStr)}.</div>`;
+}
+
 async function renderRewardsPanel(){
   const mount = document.getElementById('rewards-mount');
   if(!mount) return; // panel not built yet
@@ -2441,6 +2491,7 @@ async function renderRewardsPanel(){
         ${progressBarHtml(pct)}
         ${done ? `<div class="achv-badge">Achieved</div>` : ''}
         ${togoLine(remaining, done)}
+        ${strategyHtml(remaining, YEAR_END_DEADLINE, done, unit)}
       </div>`;
   }).join('');
 
@@ -2467,6 +2518,7 @@ async function renderRewardsPanel(){
         ${progressBarHtml(pct)}
         ${done ? `<div class="achv-badge">Qualified</div>` : ''}
         ${togoLine(remaining, done)}
+        ${strategyHtml(remaining, t.deadline, done, 'APE')}
         <div class="deadline ${daysLeft < 0 ? 'past' : ''}">${deadlineLabel}</div>
       </div>`;
   }).join('');
@@ -2485,6 +2537,7 @@ async function renderRewardsPanel(){
       ${progressBarHtml(mdrtPct)}
       ${mdrtDone ? `<div class="achv-badge">Qualified</div>` : ''}
       ${togoLine(mdrtRemaining, mdrtDone)}
+      ${strategyHtml(mdrtRemaining, YEAR_END_DEADLINE, mdrtDone, 'FYP')}
     </div>`).join('');
 
   mount.innerHTML = `
