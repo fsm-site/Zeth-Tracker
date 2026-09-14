@@ -1207,6 +1207,8 @@
   @media(max-width:560px){.whats-next-head{display:block;}.whats-next-calendar{padding:10px;}.whats-next-weekdays,.whats-next-calendar-grid{gap:3px;}.whats-next-day{min-height:54px; padding:5px;}.whats-next-day-indicators{margin-top:8px;}.whats-next-day-number{font-size:11px;}.whats-next-side{grid-template-columns:1fr;}.whats-next-side .whats-next-card:last-child{grid-column:auto;}.whats-next-add-row{flex-wrap:wrap;}.whats-next-add-row input,.whats-next-add-row select{flex:1 1 120px;}.whats-next-add-row button{flex:0 0 auto;}}
 
   /* --- Daily To-Do (checklist + output log) --- */
+  .pru-todo-inline{display:none;}
+  .pru-todo-inline.visible{display:block; margin-top:28px; padding-top:24px; border-top:1px solid var(--line);}
   .daily-checklist-panel{max-width:1180px;}
   .daily-date-nav{display:flex; align-items:center; gap:12px; margin-bottom:18px; flex-wrap:wrap;}
   .daily-date-btn{all:unset; cursor:pointer; padding:7px 12px; border:1px solid var(--line); border-radius:999px; font-size:12px; font-weight:700; color:var(--ink-soft);}
@@ -1494,6 +1496,7 @@
     <div class="sub" id="group-sub">Tap a section to open it.</div>
 
     <div class="box-grid" id="box-grid"></div>
+    <div id="pru-todo-inline" class="pru-todo-inline"></div>
     <div id="leaf-mount"></div>
     <div id="statistics-mount" class="statistics-view"></div>
     <div id="prufin-statistics-mount" class="statistics-view"></div>
@@ -1658,9 +1661,6 @@ const GROUPS = [
   ]},
   { id: "whats-next-group", label: "WHAT'S NEXT", items: [
     { id: "whats-next", label: "WHAT'S NEXT" },
-  ]},
-  { id: "daily-group", label: "DAILY TO-DO", items: [
-    { id: "daily-checklist", label: "DAILY TO-DO" },
   ]},
 ];
 
@@ -2134,6 +2134,7 @@ const entriesCache = {};
 function allLeafIds(){
   const ids = [];
   GROUPS.forEach(g => g.items.forEach(item => { if(!item.url) ids.push(item.id); }));
+  ids.push('pru-todo'); // inline PRU section, not a GROUPS item, still needs its data primed/cached
   return ids;
 }
 async function primeCache(){
@@ -4330,13 +4331,13 @@ function dailyNormalizeDay(day){
   return clean;
 }
 async function dailyRecord(){
-  const records = await getEntries('daily-checklist');
+  const records = await getEntries('pru-todo');
   if(!records[0]) records.push({ id:'daily', days:{} });
   records[0].days = records[0].days || {};
   return { records, record:records[0] };
 }
 async function dailySave(record, records){
-  return saveEntries('daily-checklist', records || [record]);
+  return saveEntries('pru-todo', records || [record]);
 }
 function dailyProgress(day){
   const all = DAILY_CHECKLIST_SECTIONS.flatMap(section => day[section.key]);
@@ -4434,15 +4435,14 @@ function dailyRecordsLogHtml(record){
   </table></div>`;
 }
 async function renderDailyChecklistPanel(){
-  const panel = document.getElementById('leaf-daily-checklist');
+  const panel = document.getElementById('pru-todo-inline');
   if(!panel) return;
   const { record } = await dailyRecord();
   const day = dailyNormalizeDay(record.days[dailySelectedDate]);
   const { done, total } = dailyProgress(day);
   panel.innerHTML = `<div class="daily-checklist-panel">
-    <button class="back-link" onclick="backToGrid()">← DAILY TO-DO</button>
     <div class="whats-next-head">
-      <div><h1>DAILY TO-DO</h1><div class="sub">Your daily checklist — then a running record of your output.</div></div>
+      <div><h1>TO DO FOR TODAY</h1><div class="sub">Your daily checklist — then a running record of your output.</div></div>
       <div class="whats-next-today">${done}/${total} done · ${whatsNextDateKey(new Date()) === dailySelectedDate ? 'Today' : whatsNextDateLabel(dailySelectedDate)}</div>
     </div>
     ${dailyDateNav(dailySelectedDate)}
@@ -4475,10 +4475,6 @@ GROUPS.forEach(g => {
       panel = document.createElement('div');
       panel.className = 'leaf-view';
       panel.id = 'leaf-whats-next';
-    }else if(item.id === 'daily-checklist'){
-      panel = document.createElement('div');
-      panel.className = 'leaf-view';
-      panel.id = 'leaf-daily-checklist';
     }else if(item.id === 'pru-servicing'){
       panel = buildServicingPanel(item, g.label);
     }else if(tableConfig && tableConfig.lead){
@@ -4616,6 +4612,7 @@ function closeStatistics(){
 /* ---------- view switching ---------- */
 function renderView(){
   const homePanel = document.getElementById('home-panel');
+  const pruTodo = document.getElementById('pru-todo-inline');
   if(activeGroup === null){
     if(homePanel) homePanel.style.display = 'flex';
     boxGrid.style.display = 'none';
@@ -4624,6 +4621,7 @@ function renderView(){
     document.querySelectorAll('.leaf-view').forEach(p => p.classList.remove('visible'));
     statisticsMount.classList.remove('visible');
     if(prufinStatisticsMount) prufinStatisticsMount.classList.remove('visible');
+    if(pruTodo) pruTodo.classList.remove('visible');
     return;
   }
   if(homePanel) homePanel.style.display = 'none';
@@ -4637,6 +4635,7 @@ function renderView(){
     document.querySelectorAll('.leaf-view').forEach(p => p.classList.remove('visible'));
     statisticsMount.classList.remove('visible');
     if(prufinStatisticsMount) prufinStatisticsMount.classList.add('visible');
+    if(pruTodo) pruTodo.classList.remove('visible');
     return;
   }
   if(prufinStatisticsMount) prufinStatisticsMount.classList.remove('visible');
@@ -4646,6 +4645,7 @@ function renderView(){
     document.getElementById('group-sub').style.display = 'none';
     document.querySelectorAll('.leaf-view').forEach(p => p.classList.remove('visible'));
     statisticsMount.classList.add('visible');
+    if(pruTodo) pruTodo.classList.remove('visible');
     return;
   }
   statisticsMount.classList.remove('visible');
@@ -4657,6 +4657,7 @@ function renderView(){
   if(!showGrid){
     document.getElementById('leaf-' + activeLeaf).classList.add('visible');
   }
+  if(pruTodo) pruTodo.classList.toggle('visible', showGrid && activeGroup === 'pru');
 }
 
 // Restarts the "view-enter" CSS animation on an element even if it already
@@ -4706,6 +4707,7 @@ function backToGrid(){
 /* ---------- rendering: generic list ---------- */
 async function renderList(id){
   if(id === 'whats-next') return;
+  if(id === 'pru-todo') return;
   if(id === 'pru-servicing') return renderServicingTable(id);
   if(id === 'prufin') return renderPrufinPanel();
   if(id === 'hmo-commissions') return renderHmoCommissionsPanel();
