@@ -534,6 +534,7 @@
     margin-bottom:12px;
   }
   .table-form .fields .span2{ grid-column:span 2; }
+  .table-form .fields .span4{ grid-column:1 / -1; }
 
   /* --- today badge (sidebar) --- */
   .today-badge{
@@ -1892,6 +1893,7 @@ const TABLE_LEAVES = {
       { key: "need", label: "Need", type: "checklist", options: LEAD_NEEDS },
       { key: "lastMove", label: "Last Move", type: "select", options: ["Push","Pull"] },
       { key: "contactLink", label: "Contact Link", type: "url", placeholder: "https://..." },
+      { key: "notes", label: "Notes", type: "textarea", placeholder: "Personal notes about this lead..." },
     ],
   },
   "hmo-clients": {
@@ -2273,6 +2275,7 @@ function buildLeadPanel(item, groupLabel, config){
   const fields = config.columns.map(col => {
     if(col.type === 'select') return `<div><label>${col.label}</label><select id="${item.id}-f-${col.key}"><option value="">—</option>${col.options.map(option => `<option value="${option}">${option}</option>`).join('')}</select></div>`;
     if(col.type === 'checklist') return `<div><label>${col.label}</label><select id="${item.id}-f-${col.key}" multiple size="1" title="Select one or more needs">${col.options.map(option => `<option value="${option}">${option}</option>`).join('')}</select></div>`;
+    if(col.type === 'textarea') return `<div class="span4"><label>${col.label}</label><textarea id="${item.id}-f-${col.key}" rows="3" placeholder="${col.placeholder || ''}"></textarea></div>`;
     return `<div><label>${col.label}</label><input id="${item.id}-f-${col.key}" type="${col.type === 'email' ? 'email' : col.type === 'url' ? 'url' : col.type === 'date' ? 'date' : col.type === 'number' ? 'number' : 'text'}" placeholder="${col.placeholder || ''}"></div>`;
   }).join('');
   el.innerHTML = `
@@ -4743,6 +4746,7 @@ async function openLeadDetails(id, idx){
     <div class="lead-detail-item"><div class="lead-detail-label">Contact Link</div><div class="lead-detail-value">${contactHref(row.contactLink) ? `<a class="contact-link" href="${escapeHtml(contactHref(row.contactLink))}" target="_blank" rel="noopener">Open Contact Link</a>` : '<span class="empty">Not provided</span>'}</div></div>
     <div class="lead-detail-item"><div class="lead-detail-label">Last Move</div><div class="lead-detail-value">${moveBadge(row.lastMove)}</div></div>
     <div class="lead-detail-item"><div class="lead-detail-label">Next Move</div><div class="lead-detail-value">${moveBadge(nextLeadMove(row.lastMove))}</div></div>
+    <div class="lead-detail-item full"><div class="lead-detail-label">Notes</div><div class="lead-detail-value ${row.notes ? '' : 'empty'}" style="white-space:pre-wrap; font-weight:500;">${escapeHtml(row.notes || 'No notes yet')}</div></div>
   </div>`;
   modal.classList.add('open');
 }
