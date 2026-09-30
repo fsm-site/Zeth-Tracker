@@ -1459,6 +1459,99 @@
     .corner-signout{ top:12px; right:12px; padding:7px 13px; }
     .corner-trash{ bottom:12px; right:12px; }
   }
+  /* ---------- MONEY MATTERS · MONTHLY FIN ---------- */
+  .mf-monthbar{display:flex; align-items:center; flex-wrap:wrap; gap:10px 14px; margin:-6px 0 22px;}
+  .mf-nav{all:unset; cursor:pointer; width:38px; height:38px; border-radius:50%; display:grid; place-items:center; font-size:20px; line-height:1; color:var(--navy); background:#fff; border:1px solid var(--line); box-shadow:0 4px 10px rgba(18,48,73,.06);}
+  .mf-nav:hover{border-color:var(--brass); color:var(--brass);}
+  .mf-nav:focus-visible,.mf-add:focus-visible,.mf-del:focus-visible{outline:2px solid var(--brass); outline-offset:2px;}
+  .mf-month-title{font-size:24px; font-weight:800; color:var(--navy); letter-spacing:-.5px; min-width:190px; text-align:center;}
+  .mf-jump{width:auto; flex:0 0 auto; padding:7px 10px; font-size:12.5px; border:1px solid var(--line); border-radius:8px; font-family:inherit; color:var(--ink); background:#fff;}
+  .mf-today{color:var(--brass);}
+  .mf-savenote{margin:0 0 0 auto; font-size:12px; color:var(--ink-soft);}
+  .mf-kpis{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin-bottom:12px;}
+  .mf-kpis .prufin-highlight-box{margin-bottom:0; padding:18px 20px;}
+  .mf-kpis .prufin-highlight-box .phb-value{font-size:22px; overflow-wrap:anywhere;}
+  .mf-kpis .phb-label{display:flex; align-items:center; gap:7px;}
+  .mf-dot{width:9px; height:9px; border-radius:50%; flex-shrink:0; background:#fff;}
+  .mf-dot.income{background:#7fc4e8;} .mf-dot.expense{background:#f08a7e;} .mf-dot.debt{background:#f2c066;}
+  .mf-kpis .mf-left{background:linear-gradient(135deg,var(--brass),var(--brass-dark) 160%); border-color:var(--brass);}
+  .mf-kpis .mf-left.negative{background:linear-gradient(135deg,var(--red),#8f2a1f 160%); border-color:var(--red);}
+  .mf-worth{display:flex; flex-wrap:wrap; gap:8px 26px; font-size:13px; color:var(--ink-soft); margin:0 0 26px; padding:0 4px;}
+  .mf-worth b{color:var(--navy); margin-left:6px;}
+  .mf-worth b.negative{color:var(--red);}
+  .mf-grid{display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:30px;}
+  .mf-span2{grid-column:1 / -1;}
+  .mf-card{background:#fff; border:1px solid var(--line); border-radius:14px; padding:20px 20px 18px; box-shadow:0 5px 16px rgba(23,35,49,.025); border-top:4px solid var(--mf-c,var(--brass)); min-width:0;}
+  .mf-card.income{--mf-c:var(--brass);} .mf-card.expense{--mf-c:var(--red);} .mf-card.debt{--mf-c:#C98A1B;} .mf-card.asset{--mf-c:var(--navy);}
+  .mf-card-head{display:flex; justify-content:space-between; align-items:baseline; gap:10px; margin-bottom:12px;}
+  .mf-card-head h2{margin:0; font-size:17px; font-weight:700; color:var(--navy);}
+  .mf-card-total{font-weight:800; color:var(--mf-c); white-space:nowrap;}
+  .mf-cols,.mf-row{display:grid; gap:8px; align-items:center;}
+  .mf-cols{font-size:11px; font-weight:700; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.3px; padding:0 2px 5px;}
+  .mf-cols .r{text-align:right;}
+  .mf-row{margin-bottom:8px;}
+  .mf-2col{grid-template-columns:minmax(0,1fr) 140px 34px;}
+  .mf-3col{grid-template-columns:minmax(0,1fr) 130px 130px 34px;}
+  .mf-input{width:100%; min-width:0; padding:8px 10px; font-size:13px; border:1px solid var(--line); border-radius:8px; font-family:inherit; color:var(--ink); background:#fff;}
+  .mf-input:focus{outline:2px solid var(--brass); outline-offset:0; border-color:transparent;}
+  input[type=number].mf-input{text-align:right;}
+  .mf-del{all:unset; cursor:pointer; width:34px; height:34px; border-radius:8px; display:grid; place-items:center; color:var(--ink-soft); font-size:18px;}
+  .mf-del:hover{color:var(--red); background:var(--stripe);}
+  .mf-add{all:unset; cursor:pointer; display:inline-block; margin-top:4px; padding:7px 14px; border-radius:8px; font-size:12.5px; font-weight:700; color:var(--mf-c,var(--brass)); border:1.5px dashed var(--mf-c,var(--brass));}
+  .mf-add:hover{background:var(--stripe);}
+  .mf-add.solid{border-style:solid;}
+  .mf-egroup{border:1px solid var(--line); border-radius:12px; padding:12px 12px 10px; margin-bottom:12px; background:var(--ivory);}
+  .mf-egroup-head{display:grid; grid-template-columns:minmax(0,1fr) auto 34px; gap:8px; align-items:center; margin-bottom:8px;}
+  .mf-egroup-head .mf-input{font-weight:700; color:var(--navy); background:transparent; border-color:transparent;}
+  .mf-egroup-head .mf-input:hover{border-color:var(--line); background:#fff;}
+  .mf-sub{font-weight:700; color:var(--red); white-space:nowrap; font-size:13px;}
+  .mf-table-wrap{overflow-x:auto; margin-bottom:10px;}
+  .mf-debt-table{width:100%; min-width:860px; border-collapse:collapse; font-size:13px;}
+  .mf-debt-table th{font-size:11px; font-weight:700; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.3px; text-align:left; padding:0 6px 6px;}
+  .mf-debt-table th.r{text-align:right;}
+  .mf-debt-table td{padding:6px; vertical-align:middle; border-top:1px solid var(--line);}
+  .mf-debt-table .mf-input{min-width:90px;}
+  .mf-debt-table td.name .mf-input{min-width:150px;}
+  .mf-progress{min-width:130px;}
+  .mf-bar{height:8px; border-radius:99px; background:var(--stripe); overflow:hidden;}
+  .mf-bar i{display:block; height:100%; background:#C98A1B; border-radius:99px;}
+  .mf-pmeta{font-size:11px; color:var(--ink-soft); margin-top:4px; white-space:nowrap;}
+  .mf-hint{font-size:12px; color:var(--ink-soft); margin:10px 0 0;}
+  .mf-empty-month{background:#fff; border:1.5px dashed var(--line); border-radius:14px; padding:28px; max-width:640px; margin-bottom:30px;}
+  .mf-empty-month h2{margin:0 0 6px; font-size:19px; color:var(--navy);}
+  .mf-empty-month p{margin:0 0 16px; color:var(--ink-soft); font-size:13.5px; line-height:1.55;}
+  .mf-empty-month .primary{margin-right:10px;}
+  .mf-ghost{all:unset; cursor:pointer; font-size:13px; font-weight:600; padding:8px 16px; border-radius:8px; color:var(--brass); border:1px solid var(--brass);}
+  .mf-ghost:hover{background:var(--stripe);}
+  .mf-charts{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .mf-legend{display:flex; flex-wrap:wrap; gap:6px 16px; font-size:11.5px; color:var(--ink-soft); margin:-6px 0 12px;}
+  .mf-legend span{display:inline-flex; align-items:center; gap:6px;}
+  .mf-legend i{width:10px; height:10px; border-radius:3px; display:inline-block;}
+  .mf-svg{width:100%; height:auto; display:block; overflow:visible;}
+  .mf-svg text{font-family:inherit; font-size:11px; fill:var(--ink-soft);}
+  .mf-svg .grid{stroke:var(--line); stroke-width:1;}
+  .mf-svg .zero{stroke:var(--ink-soft); stroke-width:1;}
+  .mf-f-income{fill:var(--brass);} .mf-f-expense{fill:var(--red);} .mf-f-debt{fill:#C98A1B;}
+  .mf-l-left{stroke:var(--navy); stroke-width:2.5; fill:none;} .mf-p-left{fill:var(--navy);}
+  .mf-l-asset{stroke:var(--brass); stroke-width:2; fill:none;} .mf-p-asset{fill:var(--brass);}
+  .mf-l-debt{stroke:#C98A1B; stroke-width:2; fill:none; stroke-dasharray:5 4;} .mf-p-debt{fill:#C98A1B;}
+  .mf-l-net{stroke:var(--navy); stroke-width:3; fill:none;} .mf-p-net{fill:var(--navy);}
+  .mf-chart-empty{color:var(--ink-soft); font-size:13px; padding:34px 0; text-align:center;}
+  .mf-foot{margin-top:18px;}
+  @media(max-width:1000px){.mf-kpis{grid-template-columns:repeat(2,minmax(0,1fr));}}
+  @media(max-width:860px){.mf-grid,.mf-charts{grid-template-columns:1fr;}}
+  @media(max-width:520px){
+    .mf-kpis{grid-template-columns:1fr 1fr; gap:10px;}
+    .mf-kpis .prufin-highlight-box{padding:14px;}
+    .mf-kpis .prufin-highlight-box .phb-value{font-size:17px;}
+    .mf-kpis .phb-label{font-size:10.5px;}
+    .mf-month-title{font-size:20px; min-width:0; flex:1;}
+    .mf-savenote{width:100%; margin:0;}
+    .mf-2col{grid-template-columns:minmax(0,1fr) 110px 34px;}
+    .mf-3col{grid-template-columns:minmax(0,1fr) 110px 34px;}
+    .mf-3col .mf-atype{grid-column:1 / 2; grid-row:2;}
+    .mf-cols.mf-3col{display:none;}
+  }
 </style>
 </head>
 <body>
@@ -1651,6 +1744,7 @@ const GROUPS = [
     { id: "money-income", label: "SOURCES OF INCOME" },
     { id: "money-flow", label: "MONTHLY FLOW" },
     { id: "money-ledger", label: "LEDGER" },
+    { id: "money-monthly", label: "MONTHLY FIN" },
   ]},
   { id: "sites", label: "SITES", items: [
     { id: "site-main",       label: "Main Site",       url: "https://insurancebyengrzeth.com/" },
@@ -4201,6 +4295,560 @@ function whatsNextWorkspace(day, dateKey){
   const notes = day.notes || {};
   return `<div class="whats-next-workspace"><div class="whats-next-main"><section class="whats-next-card card"><div class="whats-next-date">${whatsNextDateLabel(dateKey)}</div><h2>Day Rating</h2><div class="sub">This describes your capacity and experience, not your productivity or success.</div><div class="whats-next-rating-options">${WHATS_NEXT_RATINGS.map(([key, label, description]) => `<button class="whats-next-rating-option ${key} ${day.rating === key ? 'active' : ''}" onclick="whatsNextSetRating('${dateKey}','${key}')">${label} · ${description}</button>`).join('')}</div></section><section class="whats-next-card card"><h2>Top 3</h2><div class="sub">What matters most today.</div><div class="whats-next-checklist">${top3}</div></section><section class="whats-next-card card"><h2>To-do List</h2><div class="sub">Tasks are things you finish. Add a category or make your own.</div>${whatsNextTaskRows(day.tasks, 'tasks', dateKey)}<div class="whats-next-add-row"><input id="whats-next-task-input" type="text" placeholder="Add a task"><select id="whats-next-task-category"><option value="">No category</option>${WHATS_NEXT_CATEGORIES.map(category => `<option>${category}</option>`).join('')}</select><button class="primary" onclick="whatsNextAddTask('${dateKey}','tasks','whats-next-task-input')">Add</button></div></section>${whatsNextCategorySection('MONEY-MAKING', day, dateKey)}${whatsNextCategorySection('BUSINESS-BUILDING', day, dateKey)}${whatsNextCategorySection('CLIENT CARE', day, dateKey)}${whatsNextCategorySection('LIFE-BUILDING', day, dateKey)}${whatsNextCategorySection('MAINTENANCE', day, dateKey)}</div><div class="whats-next-side"><section class="whats-next-card card"><div class="whats-next-quick-add"><button class="primary" onclick="whatsNextQuickAdd('task')">+ Task</button><button class="primary" onclick="whatsNextQuickAdd('event')">+ Event</button><button class="primary" onclick="whatsNextQuickAdd('note')">+ Note</button><button class="primary" onclick="whatsNextQuickAdd('habit')">+ Habit</button><button class="primary" onclick="whatsNextQuickAdd('money')">+ Money-Making Activity</button></div><h2>Events</h2><div class="whats-next-events">${events}</div></section><section class="whats-next-card card"><h2>Habits</h2><div class="sub">Habits are things you practice, not tasks to finish.</div>${whatsNextTaskRows(day.habits, 'habits', dateKey)}${whatsNextAddRow('habit', dateKey, 'whats-next-habit-input')}</section><section class="whats-next-card card"><h2>Daily Notes / Journal</h2><div class="whats-next-notes"><label>How am I feeling?<textarea id="whats-next-feeling">${escapeHtml(notes.feeling)}</textarea></label><label>What happened today?<textarea id="whats-next-happened">${escapeHtml(notes.happened)}</textarea></label><label>What worked?<textarea id="whats-next-worked">${escapeHtml(notes.worked)}</textarea></label><label>What didn't?<textarea id="whats-next-didnt">${escapeHtml(notes.didnt)}</textarea></label><label>What do I want to remember?<textarea id="whats-next-remember">${escapeHtml(notes.remember)}</textarea></label><label>What's next?<textarea id="whats-next-next">${escapeHtml(notes.next)}</textarea></label><label>Income generated (optional)<input id="whats-next-income" type="text" value="${escapeHtml(day.income)}" placeholder="Optional amount or note"></label><label>People helped (optional)<input id="whats-next-people" type="text" value="${escapeHtml(day.people)}" placeholder="Optional count or note"></label><button class="primary" onclick="whatsNextSaveNotes('${dateKey}')">Save notes</button></div></section><section class="whats-next-card card"><h2>Daily Summary</h2><div class="whats-next-summary">${whatsNextSummary(day)}</div></section></div></div>`;
 }
+/* ================= MONEY MATTERS — MONTHLY FIN =================
+   A month-by-month tracker of income, expenses, debts and assets.
+   Everything lives in one Firestore document (entries id 'money-monthly')
+   holding an array with ONE record per calendar month, so the Money
+   Matters counter shows how many months have been tracked:
+     { id:'2026-09',
+       income:[{id, source, amount}],
+       expenseTypes:['Housing', ...],
+       expenses:[{id, type, description, amount}],
+       debts:[{id, name, balance, left, months, interest, payment}],
+       assets:[{id, name, type, value}] }
+   Inputs update the record in memory as you type; saving to Firestore is
+   debounced so a burst of typing becomes a single write. */
+const MF_ID = 'money-monthly';
+const MF_DEFAULT_TYPES = ['Housing','Food','Transportation','Utilities'];
+const MF_ASSET_TYPES = ['Cash','Bank Savings','Investments','Property','Vehicle','Receivables','Other'];
+const MF_TODAY = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; })();
+let mfMonth = MF_TODAY;
+let mfSaveTimer = null;
+let mfChartTimer = null;
+
+function mfNewId(){ return 'mf' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+function mfNum(v){ const n = parseFloat(v); return isFinite(n) ? n : 0; }
+function mfRound(n){ return Math.round(n * 100) / 100; }
+function mfShift(key, n){
+  const [y, m] = key.split('-').map(Number);
+  const d = new Date(y, m - 1 + n, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+}
+function mfLabel(key, short){
+  const [y, m] = key.split('-').map(Number);
+  return short ? `${MONTHS[m - 1].slice(0, 3)} '${String(y).slice(2)}` : `${MONTHS[m - 1]} ${y}`;
+}
+function mfShort(n){
+  const a = Math.abs(n), sign = n < 0 ? '-' : '';
+  if(a >= 1e6) return sign + '₱' + (a / 1e6).toFixed(a >= 1e7 ? 0 : 1).replace(/\.0$/, '') + 'M';
+  if(a >= 1e3) return sign + '₱' + (a / 1e3).toFixed(a >= 1e4 ? 0 : 1).replace(/\.0$/, '') + 'K';
+  return sign + '₱' + Math.round(a);
+}
+function mfMoney(n){ return n < 0 ? '-' + fmtCurrency(-n) : fmtCurrency(n); }
+function mfAll(){ return entriesCache[MF_ID] || (entriesCache[MF_ID] = []); }
+function mfRecord(key){ return mfAll().find(r => r && r.id === key) || null; }
+function mfBlank(key){
+  return {
+    id: key,
+    income: [{ id: mfNewId(), source: '', amount: '' }, { id: mfNewId(), source: '', amount: '' }],
+    expenseTypes: [...MF_DEFAULT_TYPES],
+    expenses: [], debts: [], assets: [],
+  };
+}
+function mfNormalize(r){
+  r.income = Array.isArray(r.income) ? r.income : [];
+  r.expenses = Array.isArray(r.expenses) ? r.expenses : [];
+  r.debts = Array.isArray(r.debts) ? r.debts : [];
+  r.assets = Array.isArray(r.assets) ? r.assets : [];
+  r.expenseTypes = Array.isArray(r.expenseTypes) ? r.expenseTypes : [];
+  r.expenses.forEach(e => { if(e.type && !r.expenseTypes.includes(e.type)) r.expenseTypes.push(e.type); });
+  return r;
+}
+/* Monthly payment for a debt: uses the amount typed in, or — if left blank —
+   the standard amortized payment that clears what's left over the months to go. */
+function mfAutoPayment(d){
+  const left = mfNum(d.left), n = Math.round(mfNum(d.months)), r = mfNum(d.interest) / 100 / 12;
+  if(left <= 0 || n <= 0) return 0;
+  if(r === 0) return left / n;
+  return left * r / (1 - Math.pow(1 + r, -n));
+}
+function mfHasManualPayment(d){ return d.payment !== '' && d.payment != null; }
+function mfPayment(d){ return mfHasManualPayment(d) ? mfNum(d.payment) : mfAutoPayment(d); }
+function mfTotals(r){
+  const sum = (arr, f) => arr.reduce((s, x) => s + mfNum(x[f]), 0);
+  const income = sum(r.income, 'amount');
+  const expenses = sum(r.expenses, 'amount');
+  const debtPay = r.debts.reduce((s, d) => s + (mfNum(d.left) > 0 ? mfPayment(d) : 0), 0);
+  const assets = sum(r.assets, 'value');
+  const debtLeft = sum(r.debts, 'left');
+  return { income, expenses, debtPay, leftOver: income - expenses - debtPay, assets, debtLeft, netWorth: assets - debtLeft };
+}
+/* New month from an earlier one: same income sources, expenses and assets;
+   each debt moves forward one payment (left to go drops by the principal
+   part of the payment, months to go drops by one). */
+function mfCarryOver(fromKey, toKey){
+  const src = JSON.parse(JSON.stringify(mfNormalize(mfRecord(fromKey))));
+  ['income', 'expenses', 'assets'].forEach(list => src[list].forEach(x => { x.id = mfNewId(); }));
+  src.debts = src.debts.map(d => {
+    const next = { ...d, id: mfNewId() };
+    const left = mfNum(d.left);
+    if(left <= 0) return next;
+    const principal = Math.max(0, mfPayment(d) - left * (mfNum(d.interest) / 100 / 12));
+    next.left = String(mfRound(Math.max(0, left - principal)));
+    next.months = String(Math.max(0, Math.round(mfNum(d.months)) - 1));
+    return next;
+  });
+  src.id = toKey;
+  return src;
+}
+function mfPrevRecorded(key){
+  const keys = mfAll().map(r => r.id).filter(k => k < key).sort();
+  return keys[keys.length - 1] || null;
+}
+
+/* ---------- saving ---------- */
+function mfSetNote(text){ const el = document.getElementById('mf-savenote'); if(el) el.textContent = text; }
+function mfScheduleSave(){
+  mfSetNote('Saving…');
+  clearTimeout(mfSaveTimer);
+  mfSaveTimer = setTimeout(mfSaveNow, 700);
+}
+async function mfSaveNow(){
+  clearTimeout(mfSaveTimer);
+  const all = mfAll().sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+  const ok = await saveEntries(MF_ID, all);
+  mfSetNote(ok ? 'All changes saved.' : 'Could not save — check your connection and try again.');
+  return ok;
+}
+
+/* ---------- panel ---------- */
+function buildMonthlyFinPanel(item, groupLabel){
+  const el = document.createElement('div');
+  el.className = 'leaf-view';
+  el.id = 'leaf-' + item.id;
+  el.innerHTML = `
+    <button class="back-link" onclick="backToGrid()">← ${groupLabel}</button>
+    <h1>${item.label}</h1>
+    <div class="sub">${groupLabel} · Income, expenses, debts and assets, tracked month by month</div>
+
+    <div class="mf-monthbar">
+      <button class="mf-nav" data-mf-act="prev" aria-label="Previous month">‹</button>
+      <div class="mf-month-title" id="mf-month-title"></div>
+      <button class="mf-nav" data-mf-act="next" aria-label="Next month">›</button>
+      <input type="month" class="mf-jump" id="mf-month-jump" aria-label="Jump to a month">
+      <button class="clear-link mf-today" data-mf-act="today" id="mf-today">Back to this month</button>
+      <span class="mf-savenote" id="mf-savenote"></span>
+    </div>
+
+    <div id="mf-summary"></div>
+    <div id="mf-body"></div>
+
+    <div class="rewards-section">
+      <h2>Month by Month</h2>
+      <div class="rs-sub">Your last 12 recorded months. Every month you fill in adds a point to these charts.</div>
+      <div class="statistics-chart-card" style="margin-bottom:16px;">
+        <h3>Income, Expenses &amp; Debt Payments</h3>
+        <div class="mf-legend">
+          <span><i style="background:var(--brass)"></i>Income</span>
+          <span><i style="background:var(--red)"></i>Expenses</span>
+          <span><i style="background:#C98A1B"></i>Debt payments</span>
+          <span><i style="background:var(--navy); height:3px; border-radius:2px;"></i>Left over</span>
+        </div>
+        <div id="mf-chart-trend"></div>
+      </div>
+      <div class="mf-charts">
+        <div class="statistics-chart-card"><h3 id="mf-bytype-title">Expenses by Type</h3><div id="mf-chart-bytype"></div></div>
+        <div class="statistics-chart-card">
+          <h3>Net Worth</h3>
+          <div class="mf-legend">
+            <span><i style="background:var(--brass)"></i>Assets</span>
+            <span><i style="background:#C98A1B"></i>Debt remaining</span>
+            <span><i style="background:var(--navy)"></i>Net worth</span>
+          </div>
+          <div id="mf-chart-worth"></div>
+        </div>
+      </div>
+      <div class="mf-foot"><button class="clear-link" data-mf-act="clear-month">Clear this month</button></div>
+    </div>
+  `;
+  el.addEventListener('input', mfOnInput);
+  el.addEventListener('change', mfOnChange);
+  el.addEventListener('click', mfOnClick);
+  return el;
+}
+
+async function renderMonthlyFinPanel(){
+  const title = document.getElementById('mf-month-title');
+  if(!title) return;
+  await getEntries(MF_ID); // make sure the month records are loaded into the cache
+  title.textContent = mfLabel(mfMonth);
+  const jump = document.getElementById('mf-month-jump');
+  if(jump) jump.value = mfMonth;
+  const today = document.getElementById('mf-today');
+  if(today) today.style.visibility = mfMonth === MF_TODAY ? 'hidden' : 'visible';
+  const rec = mfRecord(mfMonth);
+  const body = document.getElementById('mf-body');
+  if(rec){
+    mfNormalize(rec);
+    body.innerHTML = `
+      <div class="mf-grid">
+        <section class="mf-card income">
+          <div class="mf-card-head"><h2>Sources of Income</h2><span class="mf-card-total" data-mf-total="income"></span></div>
+          <div class="mf-cols mf-2col"><span>Source</span><span class="r">Amount</span><span></span></div>
+          <div id="mf-rows-income">${mfIncomeRows(rec)}</div>
+          <button class="mf-add" data-mf-add="income">+ Add more</button>
+        </section>
+        <section class="mf-card asset">
+          <div class="mf-card-head"><h2>Assets</h2><span class="mf-card-total" data-mf-total="assets"></span></div>
+          <div class="mf-cols mf-3col"><span>Asset</span><span>Type</span><span class="r">Value</span><span></span></div>
+          <div id="mf-rows-assets">${mfAssetRows(rec)}</div>
+          <button class="mf-add" data-mf-add="asset">+ Add more</button>
+        </section>
+        <section class="mf-card expense mf-span2">
+          <div class="mf-card-head"><h2>Expenses</h2><span class="mf-card-total" data-mf-total="expenses"></span></div>
+          <div id="mf-rows-expenses">${mfExpenseGroups(rec)}</div>
+          <button class="mf-add solid" data-mf-add="type">+ Add expense type</button>
+        </section>
+        <section class="mf-card debt mf-span2">
+          <div class="mf-card-head"><h2>Debts to Pay</h2><span class="mf-card-total" data-mf-total="debts"></span></div>
+          <div id="mf-rows-debts">${mfDebtTable(rec)}</div>
+          <button class="mf-add" data-mf-add="debt">+ Add more</button>
+          <p class="mf-hint">Leave Monthly Payment blank and it's calculated from what's left to go, months to go and interest.</p>
+        </section>
+      </div>`;
+    document.querySelectorAll('#mf-rows-debts tr[data-mf-id]').forEach(tr => mfUpdateDebtRow(tr, rec.debts.find(d => d.id === tr.dataset.mfId)));
+  }else{
+    const prev = mfPrevRecorded(mfMonth);
+    body.innerHTML = `
+      <div class="mf-empty-month">
+        <h2>Nothing recorded for ${escapeHtml(mfLabel(mfMonth))} yet</h2>
+        ${prev
+          ? `<p>Carry over your income sources, expenses, debts and assets from ${escapeHtml(mfLabel(prev))}, then adjust what changed. Debts move forward by one month's payment.</p>
+             <button class="primary" data-mf-act="carry" data-mf-from="${prev}">Carry over from ${escapeHtml(mfLabel(prev))}</button>
+             <button class="mf-ghost" data-mf-act="start">Start blank</button>`
+          : `<p>Start with your sources of income, then your expenses by type, any debts you're paying off and what you own.</p>
+             <button class="primary" data-mf-act="start">Start ${escapeHtml(mfLabel(mfMonth))}</button>`}
+      </div>`;
+  }
+  mfUpdateTotals();
+  mfDrawCharts();
+}
+
+function mfIncomeRows(rec){
+  return rec.income.map((r, i) => `
+    <div class="mf-row mf-2col" data-mf-list="income" data-mf-id="${r.id}">
+      <input class="mf-input" data-mf-f="source" placeholder="Income ${i + 1}" aria-label="Income source ${i + 1}" value="${escapeHtml(r.source)}">
+      <input class="mf-input" type="number" inputmode="decimal" step="0.01" min="0" data-mf-f="amount" placeholder="0.00" aria-label="Amount for income ${i + 1}" value="${escapeHtml(r.amount)}">
+      <button class="mf-del" data-mf-del aria-label="Remove income ${i + 1}">×</button>
+    </div>`).join('') || `<div class="rs-sub" style="margin-bottom:8px;">No income sources yet.</div>`;
+}
+function mfAssetRows(rec){
+  return rec.assets.map((a, i) => `
+    <div class="mf-row mf-3col" data-mf-list="assets" data-mf-id="${a.id}">
+      <input class="mf-input" data-mf-f="name" placeholder="Asset ${i + 1} (e.g. BDO savings)" aria-label="Asset name" value="${escapeHtml(a.name)}">
+      <select class="mf-input mf-atype" data-mf-f="type" aria-label="Asset type">${MF_ASSET_TYPES.map(t => `<option ${t === a.type ? 'selected' : ''}>${t}</option>`).join('')}</select>
+      <input class="mf-input" type="number" inputmode="decimal" step="0.01" min="0" data-mf-f="value" placeholder="0.00" aria-label="Asset value" value="${escapeHtml(a.value)}">
+      <button class="mf-del" data-mf-del aria-label="Remove asset">×</button>
+    </div>`).join('') || `<div class="rs-sub" style="margin-bottom:8px;">No assets yet.</div>`;
+}
+function mfExpenseGroups(rec){
+  return rec.expenseTypes.map(type => {
+    const items = rec.expenses.filter(e => e.type === type);
+    return `
+      <div class="mf-egroup" data-mf-group="${escapeHtml(type)}">
+        <div class="mf-egroup-head">
+          <input class="mf-input" data-mf-type-name="${escapeHtml(type)}" value="${escapeHtml(type)}" aria-label="Expense type name">
+          <span class="mf-sub" data-mf-subtotal="${escapeHtml(type)}"></span>
+          <button class="mf-del" data-mf-del-type="${escapeHtml(type)}" aria-label="Remove ${escapeHtml(type)}">×</button>
+        </div>
+        ${items.length ? `<div class="mf-cols mf-2col"><span>Description</span><span class="r">Amount</span><span></span></div>` : ''}
+        ${items.map(e => `
+          <div class="mf-row mf-2col" data-mf-list="expenses" data-mf-id="${e.id}">
+            <input class="mf-input" data-mf-f="description" placeholder="Description" aria-label="${escapeHtml(type)} expense description" value="${escapeHtml(e.description)}">
+            <input class="mf-input" type="number" inputmode="decimal" step="0.01" min="0" data-mf-f="amount" placeholder="0.00" aria-label="${escapeHtml(type)} expense amount" value="${escapeHtml(e.amount)}">
+            <button class="mf-del" data-mf-del aria-label="Remove expense">×</button>
+          </div>`).join('')}
+        <button class="mf-add" data-mf-add="expense" data-mf-type="${escapeHtml(type)}">+ Add more</button>
+      </div>`;
+  }).join('') || `<div class="rs-sub" style="margin-bottom:8px;">No expense types yet.</div>`;
+}
+function mfDebtTable(rec){
+  if(!rec.debts.length) return `<div class="rs-sub" style="margin-bottom:8px;">No debts added. Good place to be.</div>`;
+  const num = (f, ph, step, label) => `<input class="mf-input" type="number" inputmode="decimal" step="${step}" min="0" data-mf-f="${f}" placeholder="${ph}" aria-label="${label}">`;
+  return `
+    <div class="mf-table-wrap">
+      <table class="mf-debt-table">
+        <thead><tr>
+          <th>Debt</th><th class="r">Balance</th><th class="r">Left to Go</th><th class="r">Months to Go</th>
+          <th class="r">Interest % / yr</th><th class="r">Monthly Payment</th><th>Progress</th><th></th>
+        </tr></thead>
+        <tbody>${rec.debts.map((d, i) => `
+          <tr data-mf-list="debts" data-mf-id="${d.id}">
+            <td class="name"><input class="mf-input" data-mf-f="name" placeholder="Debt ${i + 1} (e.g. Car loan)" aria-label="Debt name" value="${escapeHtml(d.name)}"></td>
+            <td>${num('balance', '0.00', '0.01', 'Balance').replace('>', ` value="${escapeHtml(d.balance)}">`)}</td>
+            <td>${num('left', '0.00', '0.01', 'Left to go').replace('>', ` value="${escapeHtml(d.left)}">`)}</td>
+            <td>${num('months', '0', '1', 'Months to go').replace('>', ` value="${escapeHtml(d.months)}">`)}</td>
+            <td>${num('interest', '0', '0.01', 'Interest percent per year').replace('>', ` value="${escapeHtml(d.interest)}">`)}</td>
+            <td>${num('payment', 'Auto', '0.01', 'Monthly payment').replace('>', ` value="${escapeHtml(d.payment)}">`)}</td>
+            <td class="mf-progress"><div class="mf-bar"><i></i></div><div class="mf-pmeta" data-mf-paid></div></td>
+            <td><button class="mf-del" data-mf-del aria-label="Remove debt">×</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+function mfUpdateDebtRow(tr, d){
+  if(!tr || !d) return;
+  const bal = mfNum(d.balance), left = mfNum(d.left);
+  const pct = bal > 0 ? Math.min(100, Math.max(0, (1 - left / bal) * 100)) : 0;
+  tr.querySelector('.mf-bar i').style.width = pct.toFixed(1) + '%';
+  const auto = mfAutoPayment(d);
+  tr.querySelector('[data-mf-f="payment"]').placeholder = auto > 0 ? `${mfRound(auto).toLocaleString('en-US')} (auto)` : 'Auto';
+  tr.querySelector('[data-mf-paid]').textContent = bal <= 0 ? 'Add the balance' : left <= 0 ? 'Paid off' : `${Math.round(pct)}% paid off`;
+}
+function mfUpdateTotals(){
+  const rec = mfRecord(mfMonth);
+  const t = mfTotals(rec ? mfNormalize(rec) : { income: [], expenses: [], debts: [], assets: [] });
+  const summary = document.getElementById('mf-summary');
+  if(summary){
+    summary.innerHTML = `
+      <div class="mf-kpis">
+        <div class="prufin-highlight-box"><div class="phb-label"><span class="mf-dot income"></span>Total Actual Income / mo</div><div class="phb-value">${mfMoney(t.income)}</div></div>
+        <div class="prufin-highlight-box"><div class="phb-label"><span class="mf-dot expense"></span>Total Expenses / mo</div><div class="phb-value">${mfMoney(t.expenses)}</div></div>
+        <div class="prufin-highlight-box"><div class="phb-label"><span class="mf-dot debt"></span>Debt Payments / mo</div><div class="phb-value">${mfMoney(t.debtPay)}</div></div>
+        <div class="prufin-highlight-box mf-left ${t.leftOver < 0 ? 'negative' : ''}"><div class="phb-label">Left Over</div><div class="phb-value">${mfMoney(t.leftOver)}</div><div class="phb-sub">Income − expenses − debt payments</div></div>
+      </div>
+      <div class="mf-worth">
+        <span>Assets<b>${mfMoney(t.assets)}</b></span>
+        <span>Debt remaining<b>${mfMoney(t.debtLeft)}</b></span>
+        <span>Net worth<b class="${t.netWorth < 0 ? 'negative' : ''}">${mfMoney(t.netWorth)}</b></span>
+      </div>`;
+  }
+  if(!rec) return;
+  const set = (sel, text) => { const el = document.querySelector(sel); if(el) el.textContent = text; };
+  set('[data-mf-total="income"]', mfMoney(t.income));
+  set('[data-mf-total="expenses"]', mfMoney(t.expenses));
+  set('[data-mf-total="debts"]', mfMoney(t.debtPay) + ' / mo');
+  set('[data-mf-total="assets"]', mfMoney(t.assets));
+  document.querySelectorAll('[data-mf-subtotal]').forEach(el => {
+    const type = el.dataset.mfSubtotal;
+    el.textContent = mfMoney(rec.expenses.filter(e => e.type === type).reduce((s, e) => s + mfNum(e.amount), 0));
+  });
+}
+
+/* ---------- events ---------- */
+function mfChanged(){
+  mfUpdateTotals();
+  mfScheduleSave();
+  clearTimeout(mfChartTimer);
+  mfChartTimer = setTimeout(mfDrawCharts, 300);
+}
+function mfOnInput(e){
+  const t = e.target;
+  if(!t.dataset || !t.dataset.mfF) return;
+  const row = t.closest('[data-mf-id]');
+  const rec = mfRecord(mfMonth);
+  if(!row || !rec) return;
+  const item = (rec[row.dataset.mfList] || []).find(x => x.id === row.dataset.mfId);
+  if(!item) return;
+  item[t.dataset.mfF] = t.value;
+  if(row.dataset.mfList === 'debts') mfUpdateDebtRow(row, item);
+  mfChanged();
+}
+async function mfOnChange(e){
+  const t = e.target;
+  if(t.id === 'mf-month-jump' && t.value){
+    mfMonth = t.value;
+    await renderMonthlyFinPanel();
+    return;
+  }
+  if(t.dataset && t.dataset.mfTypeName !== undefined){
+    const rec = mfRecord(mfMonth);
+    const oldName = t.dataset.mfTypeName, newName = t.value.trim();
+    if(!rec) return;
+    if(!newName || newName === oldName){ t.value = oldName; return; }
+    rec.expenses.forEach(x => { if(x.type === oldName) x.type = newName; });
+    rec.expenseTypes = rec.expenseTypes.includes(newName)
+      ? rec.expenseTypes.filter(x => x !== oldName)          // merged into an existing type
+      : rec.expenseTypes.map(x => x === oldName ? newName : x);
+    document.getElementById('mf-rows-expenses').innerHTML = mfExpenseGroups(rec);
+    mfChanged();
+  }
+}
+function mfFocusLast(selector){
+  const els = document.querySelectorAll(selector);
+  const el = els[els.length - 1];
+  if(el) el.focus();
+}
+async function mfOnClick(e){
+  const b = e.target.closest('button');
+  if(!b) return;
+  const act = b.dataset.mfAct;
+  if(act === 'prev' || act === 'next' || act === 'today'){
+    if(mfSaveTimer) await mfSaveNow();
+    mfMonth = act === 'today' ? MF_TODAY : mfShift(mfMonth, act === 'prev' ? -1 : 1);
+    await renderMonthlyFinPanel();
+    return;
+  }
+  if(act === 'start' || act === 'carry'){
+    const all = mfAll();
+    if(!mfRecord(mfMonth)) all.push(act === 'carry' ? mfCarryOver(b.dataset.mfFrom, mfMonth) : mfBlank(mfMonth));
+    await renderMonthlyFinPanel();
+    await mfSaveNow();
+    await renderGroupCount(idToGroup(MF_ID));
+    if(act === 'start') mfFocusLast('#mf-rows-income [data-mf-f="source"]');
+    return;
+  }
+  if(act === 'clear-month'){
+    if(!mfRecord(mfMonth)) return;
+    if(!confirm(`Delete everything recorded for ${mfLabel(mfMonth)}? This can't be undone.`)) return;
+    const all = mfAll();
+    all.splice(all.indexOf(mfRecord(mfMonth)), 1);
+    await renderMonthlyFinPanel();
+    await mfSaveNow();
+    await renderGroupCount(idToGroup(MF_ID));
+    return;
+  }
+  const rec = mfRecord(mfMonth);
+  if(!rec) return;
+  const add = b.dataset.mfAdd;
+  if(add === 'income'){
+    rec.income.push({ id: mfNewId(), source: '', amount: '' });
+    document.getElementById('mf-rows-income').innerHTML = mfIncomeRows(rec);
+    mfFocusLast('#mf-rows-income [data-mf-f="source"]');
+    mfChanged(); return;
+  }
+  if(add === 'asset'){
+    rec.assets.push({ id: mfNewId(), name: '', type: 'Cash', value: '' });
+    document.getElementById('mf-rows-assets').innerHTML = mfAssetRows(rec);
+    mfFocusLast('#mf-rows-assets [data-mf-f="name"]');
+    mfChanged(); return;
+  }
+  if(add === 'debt'){
+    rec.debts.push({ id: mfNewId(), name: '', balance: '', left: '', months: '', interest: '', payment: '' });
+    document.getElementById('mf-rows-debts').innerHTML = mfDebtTable(rec);
+    document.querySelectorAll('#mf-rows-debts tr[data-mf-id]').forEach(tr => mfUpdateDebtRow(tr, rec.debts.find(d => d.id === tr.dataset.mfId)));
+    mfFocusLast('#mf-rows-debts [data-mf-f="name"]');
+    mfChanged(); return;
+  }
+  if(add === 'expense'){
+    const type = b.dataset.mfType;
+    rec.expenses.push({ id: mfNewId(), type, description: '', amount: '' });
+    document.getElementById('mf-rows-expenses').innerHTML = mfExpenseGroups(rec);
+    const group = [...document.querySelectorAll('.mf-egroup')].find(g => g.dataset.mfGroup === type);
+    if(group){ const ins = group.querySelectorAll('[data-mf-f="description"]'); if(ins.length) ins[ins.length - 1].focus(); }
+    mfChanged(); return;
+  }
+  if(add === 'type'){
+    let name = 'New Type', n = 2;
+    while(rec.expenseTypes.includes(name)) name = 'New Type ' + (n++);
+    rec.expenseTypes.push(name);
+    document.getElementById('mf-rows-expenses').innerHTML = mfExpenseGroups(rec);
+    const last = [...document.querySelectorAll('[data-mf-type-name]')].pop();
+    if(last){ last.focus(); last.select(); }
+    mfChanged(); return;
+  }
+  if(b.dataset.mfDelType !== undefined){
+    const type = b.dataset.mfDelType;
+    const count = rec.expenses.filter(x => x.type === type).length;
+    if(count && !confirm(`Remove ${type} and its ${count} expense${count > 1 ? 's' : ''}?`)) return;
+    rec.expenses = rec.expenses.filter(x => x.type !== type);
+    rec.expenseTypes = rec.expenseTypes.filter(x => x !== type);
+    document.getElementById('mf-rows-expenses').innerHTML = mfExpenseGroups(rec);
+    mfChanged(); return;
+  }
+  if(b.hasAttribute('data-mf-del')){
+    const row = b.closest('[data-mf-id]');
+    if(!row) return;
+    const list = row.dataset.mfList;
+    rec[list] = rec[list].filter(x => x.id !== row.dataset.mfId);
+    if(list === 'income') document.getElementById('mf-rows-income').innerHTML = mfIncomeRows(rec);
+    if(list === 'assets') document.getElementById('mf-rows-assets').innerHTML = mfAssetRows(rec);
+    if(list === 'expenses') document.getElementById('mf-rows-expenses').innerHTML = mfExpenseGroups(rec);
+    if(list === 'debts'){
+      document.getElementById('mf-rows-debts').innerHTML = mfDebtTable(rec);
+      document.querySelectorAll('#mf-rows-debts tr[data-mf-id]').forEach(tr => mfUpdateDebtRow(tr, rec.debts.find(d => d.id === tr.dataset.mfId)));
+    }
+    mfChanged();
+  }
+}
+
+/* ---------- charts (plain inline SVG, no library, works offline) ---------- */
+function mfScale(values){
+  let min = Math.min(0, ...values), max = Math.max(0, ...values);
+  if(max === min) max = min + 1000;
+  const raw = (max - min) / 4;
+  const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const step = [1, 2, 2.5, 5, 10].map(m => m * mag).find(s => s >= raw) || raw;
+  return { min: Math.floor(min / step) * step, max: Math.ceil(max / step) * step, step };
+}
+function mfDrawCharts(){
+  const trendEl = document.getElementById('mf-chart-trend');
+  if(!trendEl) return;
+  const keys = mfAll().map(r => r.id).sort().slice(-12);
+  const T = keys.map(k => mfTotals(mfNormalize(mfRecord(k))));
+  const empty = '<div class="mf-chart-empty">Start a month above to see it charted here.</div>';
+
+  // 1) grouped bars: income / expenses / debt payments, with a left-over line
+  if(!keys.length){ trendEl.innerHTML = empty; }
+  else{
+    const W = 760, H = 280, L = 58, R = 12, TOP = 12, B = 30;
+    const sc = mfScale(T.flatMap(t => [t.income, t.expenses, t.debtPay, t.leftOver]));
+    const y = v => TOP + (sc.max - v) / (sc.max - sc.min) * (H - TOP - B);
+    const slot = (W - L - R) / keys.length;
+    const bw = Math.min(22, slot * 0.24);
+    let svg = '';
+    for(let v = sc.min; v <= sc.max + 1e-9; v += sc.step){
+      svg += `<line class="${Math.abs(v) < 1e-9 ? 'zero' : 'grid'}" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${mfShort(v)}</text>`;
+    }
+    const pts = [];
+    keys.forEach((k, i) => {
+      const cx = L + slot * i + slot / 2;
+      [['income', T[i].income, 'Income'], ['expense', T[i].expenses, 'Expenses'], ['debt', T[i].debtPay, 'Debt payments']].forEach(([cls, v, name], j) => {
+        const x = cx + (j - 1.5) * bw + (j - 1) * 2;
+        const top = Math.min(y(v), y(0)), h = Math.max(1, Math.abs(y(0) - y(v)));
+        svg += `<rect class="mf-f-${cls}" x="${x}" y="${top}" width="${bw}" height="${h}" rx="3"><title>${mfLabel(k)} · ${name}: ${mfMoney(v)}</title></rect>`;
+      });
+      pts.push([cx, y(T[i].leftOver), k, T[i].leftOver]);
+      svg += `<text x="${cx}" y="${H - 8}" text-anchor="middle">${mfLabel(k, true)}</text>`;
+    });
+    if(pts.length > 1) svg += `<polyline class="mf-l-left" points="${pts.map(p => p[0] + ',' + p[1]).join(' ')}"/>`;
+    pts.forEach(p => { svg += `<circle class="mf-p-left" cx="${p[0]}" cy="${p[1]}" r="4"><title>${mfLabel(p[2])} · Left over: ${mfMoney(p[3])}</title></circle>`; });
+    trendEl.innerHTML = `<svg class="mf-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Monthly income, expenses, debt payments and left over">${svg}</svg>`;
+  }
+
+  // 2) this month's expenses by type
+  const typeTitle = document.getElementById('mf-bytype-title');
+  if(typeTitle) typeTitle.textContent = `Expenses by Type · ${mfLabel(mfMonth)}`;
+  const byTypeEl = document.getElementById('mf-chart-bytype');
+  const rec = mfRecord(mfMonth);
+  const rows = rec ? rec.expenseTypes.map(type => [type, rec.expenses.filter(e => e.type === type).reduce((s, e) => s + mfNum(e.amount), 0)]).filter(r => r[1] > 0).sort((a, b) => b[1] - a[1]) : [];
+  if(byTypeEl){
+    const max = rows.length ? rows[0][1] : 0;
+    byTypeEl.innerHTML = rows.length
+      ? `<div class="statistics-bar-list">${rows.map(([type, v]) => `
+          <div class="statistics-bar-row">
+            <span class="statistics-bar-label" title="${escapeHtml(type)}">${escapeHtml(type)}</span>
+            <span class="statistics-bar-track"><span class="statistics-bar-fill" style="display:block; width:${(v / max * 100).toFixed(1)}%; background:var(--red);"></span></span>
+            <span class="statistics-bar-value">${mfMoney(v)}</span>
+          </div>`).join('')}</div>`
+      : '<div class="mf-chart-empty">No expenses entered for this month yet.</div>';
+  }
+
+  // 3) net worth over time
+  const worthEl = document.getElementById('mf-chart-worth');
+  if(worthEl){
+    if(!keys.length){ worthEl.innerHTML = empty; }
+    else{
+      const W = 380, H = 240, L = 62, R = 14, TOP = 12, B = 28;
+      const sc = mfScale(T.flatMap(t => [t.assets, t.debtLeft, t.netWorth]));
+      const y = v => TOP + (sc.max - v) / (sc.max - sc.min) * (H - TOP - B);
+      const x = i => keys.length === 1 ? (L + W - R) / 2 : L + i * (W - L - R) / (keys.length - 1);
+      let svg = '';
+      for(let v = sc.min; v <= sc.max + 1e-9; v += sc.step){
+        svg += `<line class="${Math.abs(v) < 1e-9 ? 'zero' : 'grid'}" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${mfShort(v)}</text>`;
+      }
+      const every = Math.ceil(keys.length / 6);
+      keys.forEach((k, i) => { if(i % every === 0 || i === keys.length - 1) svg += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle">${mfLabel(k, true)}</text>`; });
+      [['asset', 'assets', 'Assets'], ['debt', 'debtLeft', 'Debt remaining'], ['net', 'netWorth', 'Net worth']].forEach(([cls, f, name]) => {
+        if(keys.length > 1) svg += `<polyline class="mf-l-${cls}" points="${T.map((t, i) => x(i) + ',' + y(t[f])).join(' ')}"/>`;
+        T.forEach((t, i) => { svg += `<circle class="mf-p-${cls}" cx="${x(i)}" cy="${y(t[f])}" r="${cls === 'net' ? 4 : 3}"><title>${mfLabel(keys[i])} · ${name}: ${mfMoney(t[f])}</title></circle>`; });
+      });
+      worthEl.innerHTML = `<svg class="mf-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Assets, debt remaining and net worth by month">${svg}</svg>`;
+    }
+  }
+}
+
 async function renderWhatsNextPanel(){
   const panel = document.getElementById('leaf-whats-next');
   if(!panel) return;
@@ -4471,6 +5119,8 @@ GROUPS.forEach(g => {
       panel = buildHmoCommissionsPanel(item, g.label);
     }else if(item.id === 'money-income'){
       panel = buildMoneyIncomePanel(item, g.label);
+    }else if(item.id === 'money-monthly'){
+      panel = buildMonthlyFinPanel(item, g.label);
     }else if(item.id === 'whats-next'){
       panel = document.createElement('div');
       panel.className = 'leaf-view';
@@ -4712,6 +5362,7 @@ async function renderList(id){
   if(id === 'prufin') return renderPrufinPanel();
   if(id === 'hmo-commissions') return renderHmoCommissionsPanel();
   if(id === 'money-income') return renderMoneyIncomePanel();
+  if(id === 'money-monthly') return renderMonthlyFinPanel();
   if(TABLE_LEAVES[id] && TABLE_LEAVES[id].lead){
     return renderLeadTable(id);
   }
