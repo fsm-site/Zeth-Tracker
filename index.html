@@ -1513,6 +1513,14 @@
   .mf-cat-total{font-weight:800; color:var(--red); white-space:nowrap; font-size:15px;}
   .mf-subbar .statistics-bar-label{padding-left:14px; font-weight:500; color:var(--ink-soft);}
   .mf-subbar .statistics-bar-track{height:7px;}
+  .mf-card.card{--mf-c:#6B4FA0;}
+  .mf-card-table{min-width:720px;}
+  .mf-card-table td.mf-avail{text-align:right; font-weight:700; color:var(--navy); white-space:nowrap; padding-right:12px;}
+  .mf-card-table td.mf-avail.negative{color:var(--red);}
+  .mf-card-table tfoot td{font-weight:800; color:var(--navy); border-top:2px solid var(--line); padding-top:10px; white-space:nowrap;}
+  .mf-card-table tfoot td.r{text-align:right; padding-right:12px;}
+  .mf-card-table tfoot td[data-mf-cardsum="util"]{font-weight:600; color:var(--ink-soft); font-size:12px;}
+  .mf-bar i.mf-util-low{background:#2E8B57;} .mf-bar i.mf-util-mid{background:#C98A1B;} .mf-bar i.mf-util-high{background:var(--red);}
   .mf-table-wrap{overflow-x:auto; margin-bottom:10px;}
   .mf-debt-table{width:100%; min-width:860px; border-collapse:collapse; font-size:13px;}
   .mf-debt-table th{font-size:11px; font-weight:700; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.3px; text-align:left; padding:0 6px 6px;}
@@ -4321,7 +4329,8 @@ function whatsNextWorkspace(day, dateKey){
        expenseCats:[{id, name:'Family Expenses', subs:[{id, name}]}, ...],
        expenses:[{id, catId, subId, date:'2026-09-15', description, amount}],
        debts:[{id, name, balance, left, months, interest, payment}],
-       assets:[{id, name, type, value}] }
+       assets:[{id, name, type, value}],
+       cards:[{id, name, limit, used}] }   // credit cards: limit vs. used
    Inputs update the record in memory as you type; saving to Firestore is
    debounced so a burst of typing becomes a single write. */
 const MF_ID = 'money-monthly';
@@ -4358,7 +4367,7 @@ function mfBlank(key){
     id: key,
     income: [{ id: mfNewId(), source: '', amount: '' }, { id: mfNewId(), source: '', amount: '' }],
     expenseCats: MF_DEFAULT_CATS.map(name => ({ id: mfNewId(), name, subs: [] })),
-    expenses: [], debts: [], assets: [],
+    expenses: [], debts: [], assets: [], cards: [],
   };
 }
 function mfNormalize(r){
@@ -4366,6 +4375,7 @@ function mfNormalize(r){
   r.expenses = Array.isArray(r.expenses) ? r.expenses : [];
   r.debts = Array.isArray(r.debts) ? r.debts : [];
   r.assets = Array.isArray(r.assets) ? r.assets : [];
+  r.cards = Array.isArray(r.cards) ? r.cards : [];
   if(!Array.isArray(r.expenseCats)){
     /* Older months used flat expense types (Housing, Food...). Keep that data:
        each old type becomes a sub-category under Family Expenses. */
@@ -4403,14 +4413,20 @@ function mfTotals(r){
   const debtPay = r.debts.reduce((s, d) => s + (mfNum(d.left) > 0 ? mfPayment(d) : 0), 0);
   const assets = sum(r.assets, 'value');
   const debtLeft = sum(r.debts, 'left');
-  return { income, expenses, debtPay, leftOver: income - expenses - debtPay, assets, debtLeft, netWorth: assets - debtLeft };
+  const cards = r.cards || [];
+  const cardLimit = sum(cards, 'limit'), cardUsed = sum(cards, 'used');
+  /* Liabilities = loans still owed + what's used on credit cards. Unused credit
+     (available) is borrowing room, not an asset, so it doesn't add to net worth. */
+  const liabilities = debtLeft + cardUsed;
+  return { income, expenses, debtPay, leftOver: income - expenses - debtPay, assets, debtLeft,
+    cardLimit, cardUsed, cardAvail: cardLimit - cardUsed, liabilities, netWorth: assets - liabilities };
 }
 /* New month from an earlier one: same income sources, expenses and assets;
    each debt moves forward one payment (left to go drops by the principal
    part of the payment, months to go drops by one). */
 function mfCarryOver(fromKey, toKey){
   const src = JSON.parse(JSON.stringify(mfNormalize(mfRecord(fromKey))));
-  ['income', 'expenses', 'assets'].forEach(list => src[list].forEach(x => { x.id = mfNewId(); }));
+  ['income', 'expenses', 'assets', 'cards'].forEach(list => src[list].forEach(x => { x.id = mfNewId(); }));
   src.expenses.forEach(x => { x.date = mfMoveDate(x.date, toKey); });
   src.debts = src.debts.map(d => {
     const next = { ...d, id: mfNewId() };
@@ -4499,7 +4515,7 @@ function buildMonthlyFinPanel(item, groupLabel){
           <h3>Net Worth</h3>
           <div class="mf-legend">
             <span><i style="background:var(--brass)"></i>Assets</span>
-            <span><i style="background:#C98A1B"></i>Debt remaining</span>
+            <span><i style="background:#C98A1B"></i>Liabilities</span>
             <span><i style="background:var(--navy)"></i>Net worth</span>
           </div>
           <div id="mf-chart-worth"></div>
@@ -4552,8 +4568,15 @@ async function renderMonthlyFinPanel(){
           <button class="mf-add" data-mf-add="debt">+ Add more</button>
           <p class="mf-hint">Leave Monthly Payment blank and it's calculated from what's left to go, months to go and interest.</p>
         </section>
+        <section class="mf-card card mf-span2">
+          <div class="mf-card-head"><h2>Credit Cards</h2><span class="mf-card-total" data-mf-total="cards"></span></div>
+          <div id="mf-rows-cards">${mfCardTable(rec)}</div>
+          <button class="mf-add" data-mf-add="card">+ Add more</button>
+          <p class="mf-hint">What you've used on a card counts as a liability (money you owe) and lowers your net worth. Available credit isn't an asset — it's room to borrow. If a card's balance is here, don't add it again under Debts to Pay.</p>
+        </section>
       </div>`;
     document.querySelectorAll('#mf-rows-debts tr[data-mf-id]').forEach(tr => mfUpdateDebtRow(tr, rec.debts.find(d => d.id === tr.dataset.mfId)));
+    mfRefreshCards(rec);
   }else{
     const prev = mfPrevRecorded(mfMonth);
     body.innerHTML = `
@@ -4645,6 +4668,46 @@ function mfDebtTable(rec){
       </table>
     </div>`;
 }
+function mfCardTable(rec){
+  if(!rec.cards.length) return `<div class="rs-sub" style="margin-bottom:8px;">No credit cards added yet.</div>`;
+  return `
+    <div class="mf-table-wrap">
+      <table class="mf-debt-table mf-card-table">
+        <thead><tr>
+          <th>Card</th><th class="r">Credit Limit</th><th class="r">Used</th><th class="r">Available</th><th>Used of Limit</th><th></th>
+        </tr></thead>
+        <tbody>${rec.cards.map((c, i) => `
+          <tr data-mf-list="cards" data-mf-id="${c.id}">
+            <td class="name"><input class="mf-input" data-mf-f="name" placeholder="Card ${i + 1} (e.g. BPI Gold)" aria-label="Card name" value="${escapeHtml(c.name)}"></td>
+            <td><input class="mf-input" type="number" inputmode="decimal" step="0.01" min="0" data-mf-f="limit" placeholder="0.00" aria-label="Credit limit" value="${escapeHtml(c.limit)}"></td>
+            <td><input class="mf-input" type="number" inputmode="decimal" step="0.01" min="0" data-mf-f="used" placeholder="0.00" aria-label="Amount used" value="${escapeHtml(c.used)}"></td>
+            <td class="mf-avail" data-mf-avail></td>
+            <td class="mf-progress"><div class="mf-bar"><i></i></div><div class="mf-pmeta" data-mf-util></div></td>
+            <td><button class="mf-del" data-mf-del aria-label="Remove card">×</button></td>
+          </tr>`).join('')}
+        </tbody>
+        <tfoot><tr>
+          <td>Total</td><td class="r" data-mf-cardsum="limit"></td><td class="r" data-mf-cardsum="used"></td><td class="r" data-mf-cardsum="avail"></td><td data-mf-cardsum="util"></td><td></td>
+        </tr></tfoot>
+      </table>
+    </div>`;
+}
+function mfUtilClass(pct){ return pct > 70 ? 'high' : pct > 30 ? 'mid' : 'low'; }
+function mfUpdateCardRow(tr, c){
+  if(!tr || !c) return;
+  const limit = mfNum(c.limit), used = mfNum(c.used);
+  const pct = limit > 0 ? used / limit * 100 : 0;
+  const availEl = tr.querySelector('[data-mf-avail]');
+  availEl.textContent = mfMoney(limit - used);
+  availEl.classList.toggle('negative', limit - used < 0);
+  const bar = tr.querySelector('.mf-bar i');
+  bar.style.width = Math.min(100, pct).toFixed(1) + '%';
+  bar.className = 'mf-util-' + mfUtilClass(pct);
+  tr.querySelector('[data-mf-util]').textContent = limit > 0 ? `${Math.round(pct)}% used` : 'Add the limit';
+}
+function mfRefreshCards(rec){
+  document.querySelectorAll('#mf-rows-cards tr[data-mf-id]').forEach(tr => mfUpdateCardRow(tr, rec.cards.find(c => c.id === tr.dataset.mfId)));
+}
 function mfUpdateDebtRow(tr, d){
   if(!tr || !d) return;
   const bal = mfNum(d.balance), left = mfNum(d.left);
@@ -4656,7 +4719,7 @@ function mfUpdateDebtRow(tr, d){
 }
 function mfUpdateTotals(){
   const rec = mfRecord(mfMonth);
-  const t = mfTotals(rec ? mfNormalize(rec) : { income: [], expenses: [], debts: [], assets: [] });
+  const t = mfTotals(rec ? mfNormalize(rec) : { income: [], expenses: [], debts: [], assets: [], cards: [] });
   const summary = document.getElementById('mf-summary');
   if(summary){
     summary.innerHTML = `
@@ -4668,7 +4731,8 @@ function mfUpdateTotals(){
       </div>
       <div class="mf-worth">
         <span>Assets<b>${mfMoney(t.assets)}</b></span>
-        <span>Debt remaining<b>${mfMoney(t.debtLeft)}</b></span>
+        <span>Liabilities<b>${mfMoney(t.liabilities)}</b></span>
+        ${t.cardLimit > 0 ? `<span>Card credit available<b>${mfMoney(t.cardAvail)}</b> of ${mfMoney(t.cardLimit)}</span>` : ''}
         <span>Net worth<b class="${t.netWorth < 0 ? 'negative' : ''}">${mfMoney(t.netWorth)}</b></span>
       </div>`;
   }
@@ -4678,6 +4742,11 @@ function mfUpdateTotals(){
   set('[data-mf-total="expenses"]', mfMoney(t.expenses));
   set('[data-mf-total="debts"]', mfMoney(t.debtPay) + ' / mo');
   set('[data-mf-total="assets"]', mfMoney(t.assets));
+  set('[data-mf-total="cards"]', `${mfMoney(t.cardUsed)} used`);
+  set('[data-mf-cardsum="limit"]', mfMoney(t.cardLimit));
+  set('[data-mf-cardsum="used"]', mfMoney(t.cardUsed));
+  set('[data-mf-cardsum="avail"]', mfMoney(t.cardAvail));
+  set('[data-mf-cardsum="util"]', t.cardLimit > 0 ? `${Math.round(t.cardUsed / t.cardLimit * 100)}% used overall` : '');
   document.querySelectorAll('[data-mf-subtotal-cat]').forEach(el => { el.textContent = mfMoney(mfCatTotal(rec, el.dataset.mfSubtotalCat)); });
   document.querySelectorAll('[data-mf-subtotal-sub]').forEach(el => { el.textContent = mfMoney(mfSubTotal(rec, el.dataset.mfSubtotalSub)); });
 }
@@ -4713,6 +4782,7 @@ function mfOnInput(e){
   if(!item) return;
   item[t.dataset.mfF] = t.value;
   if(row.dataset.mfList === 'debts') mfUpdateDebtRow(row, item);
+  if(row.dataset.mfList === 'cards') mfUpdateCardRow(row, item);
   mfChanged();
 }
 async function mfOnChange(e){
@@ -4774,6 +4844,13 @@ async function mfOnClick(e){
     rec.assets.push({ id: mfNewId(), name: '', type: 'Cash', value: '' });
     document.getElementById('mf-rows-assets').innerHTML = mfAssetRows(rec);
     mfFocusLast('#mf-rows-assets [data-mf-f="name"]');
+    mfChanged(); return;
+  }
+  if(add === 'card'){
+    rec.cards.push({ id: mfNewId(), name: '', limit: '', used: '' });
+    document.getElementById('mf-rows-cards').innerHTML = mfCardTable(rec);
+    mfRefreshCards(rec);
+    mfFocusLast('#mf-rows-cards [data-mf-f="name"]');
     mfChanged(); return;
   }
   if(add === 'debt'){
@@ -4840,6 +4917,10 @@ async function mfOnClick(e){
     if(list === 'income') document.getElementById('mf-rows-income').innerHTML = mfIncomeRows(rec);
     if(list === 'assets') document.getElementById('mf-rows-assets').innerHTML = mfAssetRows(rec);
     if(list === 'expenses') document.getElementById('mf-rows-expenses').innerHTML = mfExpenseGroups(rec);
+    if(list === 'cards'){
+      document.getElementById('mf-rows-cards').innerHTML = mfCardTable(rec);
+      mfRefreshCards(rec);
+    }
     if(list === 'debts'){
       document.getElementById('mf-rows-debts').innerHTML = mfDebtTable(rec);
       document.querySelectorAll('#mf-rows-debts tr[data-mf-id]').forEach(tr => mfUpdateDebtRow(tr, rec.debts.find(d => d.id === tr.dataset.mfId)));
@@ -4920,7 +5001,7 @@ function mfDrawCharts(){
     if(!keys.length){ worthEl.innerHTML = empty; }
     else{
       const W = 380, H = 240, L = 62, R = 14, TOP = 12, B = 28;
-      const sc = mfScale(T.flatMap(t => [t.assets, t.debtLeft, t.netWorth]));
+      const sc = mfScale(T.flatMap(t => [t.assets, t.liabilities, t.netWorth]));
       const y = v => TOP + (sc.max - v) / (sc.max - sc.min) * (H - TOP - B);
       const x = i => keys.length === 1 ? (L + W - R) / 2 : L + i * (W - L - R) / (keys.length - 1);
       let svg = '';
@@ -4929,7 +5010,7 @@ function mfDrawCharts(){
       }
       const every = Math.ceil(keys.length / 6);
       keys.forEach((k, i) => { if(i % every === 0 || i === keys.length - 1) svg += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle">${mfLabel(k, true)}</text>`; });
-      [['asset', 'assets', 'Assets'], ['debt', 'debtLeft', 'Debt remaining'], ['net', 'netWorth', 'Net worth']].forEach(([cls, f, name]) => {
+      [['asset', 'assets', 'Assets'], ['debt', 'liabilities', 'Liabilities'], ['net', 'netWorth', 'Net worth']].forEach(([cls, f, name]) => {
         if(keys.length > 1) svg += `<polyline class="mf-l-${cls}" points="${T.map((t, i) => x(i) + ',' + y(t[f])).join(' ')}"/>`;
         T.forEach((t, i) => { svg += `<circle class="mf-p-${cls}" cx="${x(i)}" cy="${y(t[f])}" r="${cls === 'net' ? 4 : 3}"><title>${mfLabel(keys[i])} · ${name}: ${mfMoney(t[f])}</title></circle>`; });
       });
