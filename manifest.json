@@ -1,16 +1,22 @@
 {
   "name": "Bam's Masterlist",
   "short_name": "Masterlist",
-  "description": "Clients, leads, servicing, and Prufinated commission tracking.",
-  "start_url": "./index.html",
+  "description": "Clients, leads, commissions and monthly finances in one place.",
+  "id": "./",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "any",
-  "background_color": "#F9F8F4",
-  "theme_color": "#262624",
+  "background_color": "#F4F8FB",
+  "theme_color": "#123049",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["business", "finance", "productivity"],
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    { "src": "icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }

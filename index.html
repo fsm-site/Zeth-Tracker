@@ -2,14 +2,18 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Bam's Masterlist</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#262624">
-<link rel="icon" href="icon-192.png" type="image/png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#123049">
+<link rel="icon" href="icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="Masterlist">
+<meta name="format-detection" content="telephone=no">
+<link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
 <meta name="apple-mobile-web-app-title" content="Masterlist">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Caveat:wght@700&display=swap" rel="stylesheet">
@@ -1587,9 +1591,138 @@
     .mf-cols.mf-4col{display:none;}
     .mf-cat{padding:10px;}
   }
+
+  /* =====================================================================
+     MOBILE / TABLET / PWA HARDENING
+     Loaded last so it wins over the earlier layout rules.
+     ===================================================================== */
+  html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+  body{ -webkit-tap-highlight-color:rgba(46,110,147,.12); overscroll-behavior-y:none; }
+  button, a, select, label, .box, .nav-item{ touch-action:manipulation; }
+  img, svg, video, canvas{ max-width:100%; }
+  [hidden]{ display:none !important; }
+  #login-screen{ min-height:100vh; min-height:100dvh; }
+  #app-shell{ min-height:100vh; min-height:100dvh; }
+
+  .corner-install{
+    all:unset; cursor:pointer; position:absolute; z-index:11;
+    top:calc(14px + env(safe-area-inset-top, 0px)); left:50%; transform:translateX(-50%);
+    font-size:12.5px; font-weight:700; color:#fff; background:var(--brass);
+    padding:8px 16px; border-radius:999px; box-shadow:0 6px 16px rgba(18,48,73,.2); white-space:nowrap;
+  }
+  .corner-install:hover{ background:var(--brass-dark); }
+  .corner-install:focus-visible, .corner-signout:focus-visible, .corner-trash:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
+  #offline-banner{
+    display:none; position:fixed; z-index:40; left:50%; transform:translateX(-50%);
+    bottom:calc(16px + env(safe-area-inset-bottom, 0px)); width:max-content; max-width:calc(100% - 32px);
+    background:var(--navy); color:#fff; font-size:13px; font-weight:600; text-align:center;
+    padding:10px 16px; border-radius:12px; box-shadow:0 10px 26px rgba(18,48,73,.3);
+  }
+  body.is-offline #offline-banner{ display:block; }
+  body.is-offline main.main-centered{ padding-bottom:calc(120px + env(safe-area-inset-bottom, 0px)); }
+
+  /* The slide-in page animation (and anything else that pokes past the edge)
+     must never make the whole page scroll sideways on a phone. `clip` keeps
+     position:sticky working; `hidden` is the fallback for older Safari. */
+  #app-shell, main.main-centered{ overflow-x:hidden; }
+  @supports (overflow-x:clip){ #app-shell, main.main-centered{ overflow-x:clip; } }
+
+  /* Installed app on iPhone/iPad: the status bar is translucent, so keep
+     content and the corner buttons clear of the notch / home indicator. */
+  main.main-centered{
+    padding-top:calc(56px + env(safe-area-inset-top, 0px));
+    padding-left:max(clamp(18px,5vw,56px), env(safe-area-inset-left, 0px));
+    padding-right:max(clamp(18px,5vw,56px), env(safe-area-inset-right, 0px));
+    padding-bottom:calc(72px + env(safe-area-inset-bottom, 0px));
+  }
+  .corner-signout{ top:calc(18px + env(safe-area-inset-top, 0px)); right:calc(22px + env(safe-area-inset-right, 0px)); }
+  .corner-trash{ bottom:calc(18px + env(safe-area-inset-bottom, 0px)); right:calc(22px + env(safe-area-inset-right, 0px)); }
+  #login-screen, #auth-loading{ padding-top:env(safe-area-inset-top, 0px); padding-bottom:env(safe-area-inset-bottom, 0px); }
+  .trash-modal{ padding:calc(20px + env(safe-area-inset-top, 0px)) 16px calc(20px + env(safe-area-inset-bottom, 0px)); }
+  .trash-dialog, .client-fyp-dialog{ max-width:100%; max-height:88vh; max-height:88dvh; overflow:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; }
+  .client-fyp-modal{ padding-top:calc(16px + env(safe-area-inset-top, 0px)); padding-bottom:calc(16px + env(safe-area-inset-bottom, 0px)); }
+
+  /* Wide tables scroll inside their own box instead of stretching the page. */
+  .table-scroll, .statistics-table-wrap, .mf-table-wrap, .prufin-table-wrap{ max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+
+  /* Hover-only lift effects stick after a tap on touch screens — turn them off there. */
+  @media (hover:none){
+    .box:hover{ transform:none; box-shadow:0 8px 22px rgba(18,48,73,.1); }
+    .box:hover .box-swatch-body{ background:var(--brass); }
+    .box:active{ transform:scale(.98); }
+  }
+
+  /* Phones & tablets (touch). iOS zooms into any field whose text is under
+     16px when you tap it — keep form fields at 16px so it never jumps. */
+  @media (pointer:coarse){
+    input:not([type=checkbox]):not([type=radio]), select, textarea{ font-size:16px !important; }
+    .mf-del, .mf-cat-toggle{ width:40px; height:40px; }
+    .mf-2col{ grid-template-columns:minmax(0,1fr) 130px 40px; }
+    .mf-3col{ grid-template-columns:minmax(0,1fr) 120px 120px 40px; }
+    .mf-4col{ grid-template-columns:150px minmax(0,1fr) 130px 40px; }
+    .mf-egroup-head{ grid-template-columns:minmax(0,1fr) auto 40px; }
+    .mf-cat-head{ grid-template-columns:40px minmax(0,1fr) auto 40px; }
+    .clear-link{ padding:6px 2px; }
+  }
+
+  /* Tablets and below: Sign out / Trash sit in the page header instead of
+     floating over the content, so they never cover a button or a field. */
+  @media (max-width:1024px){
+    #app-shell{ position:relative; }
+    .corner-signout, .corner-trash{ position:absolute; bottom:auto; }
+    .corner-signout{ top:calc(14px + env(safe-area-inset-top, 0px)); right:max(14px, env(safe-area-inset-right, 0px)); }
+    .corner-trash{ top:calc(14px + env(safe-area-inset-top, 0px)); right:auto; left:max(14px, env(safe-area-inset-left, 0px)); padding:8px 14px; font-size:12.5px; }
+    main.main-centered{
+      padding-left:max(20px, env(safe-area-inset-left, 0px));
+      padding-right:max(20px, env(safe-area-inset-right, 0px));
+    }
+    .list-head{ flex-wrap:wrap; gap:12px; align-items:flex-start; }
+    .list-head > div{ flex-wrap:wrap; gap:10px 14px !important; }
+    .list-head label{ flex-wrap:wrap; }
+  }
+
+  /* Phones */
+  @media (max-width:640px){
+    main.main-centered{
+      padding-top:calc(64px + env(safe-area-inset-top, 0px));
+      padding-left:max(14px, env(safe-area-inset-left, 0px));
+      padding-right:max(14px, env(safe-area-inset-right, 0px));
+    }
+    #group-nav.center-nav{ gap:6px; margin-bottom:26px; }
+    #group-nav.center-nav .nav-item{ padding:9px 14px; font-size:12.5px; }
+    h1{ font-size:24px; overflow-wrap:anywhere; }
+    .list-head > div, .list-head > div > label{ width:100%; }
+    .list-head input[type=search]{ flex:1 1 140px; width:auto !important; min-width:0; }
+    .list-head select{ flex:1 1 auto; }
+    .form-actions{ flex-wrap:wrap; gap:10px; }
+    .form-actions button.primary{ text-align:center; }
+    .prufin-manual-form label{ width:100%; }
+    .prufin-manual-form select, .prufin-manual-form input{ min-width:0; width:100%; }
+    .prufin-manual-form button{ width:100%; text-align:center; box-sizing:border-box; }
+    .mf-2col{ grid-template-columns:minmax(0,1fr) 110px 40px; }
+    .mf-3col{ grid-template-columns:minmax(0,1fr) 110px 40px; }
+    .mf-4col{ grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) 40px; }
+    .mf-card{ padding:16px 12px 14px; }
+    .mf-edate{ padding-left:6px !important; padding-right:4px !important; }
+    .mf-cat{ padding:8px; }
+    .mf-egroup{ padding:10px 8px 8px; }
+    .mf-cat-head{ grid-template-columns:40px minmax(0,1fr) 40px; row-gap:2px; }
+    .mf-cat-head .mf-cat-total{ grid-column:2; grid-row:2; font-size:13.5px; padding-left:10px; }
+    .mf-cat-head .mf-input{ font-size:16px !important; }
+    .login-welcome{ font-size:clamp(64px, 22vw, 132px) !important; white-space:nowrap !important; }
+    #hmo-rate-editor .prufin-rate-grid{ grid-template-columns:repeat(3,minmax(0,1fr)) !important; }
+    .corner-signout{ top:calc(12px + env(safe-area-inset-top, 0px)); right:max(12px, env(safe-area-inset-right, 0px)); }
+    .corner-trash{ top:calc(12px + env(safe-area-inset-top, 0px)); left:max(12px, env(safe-area-inset-left, 0px)); bottom:auto; right:auto; }
+  }
+  @media (max-width:380px){
+    #hmo-rate-editor .prufin-rate-grid, .prufin-rate-grid{ grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+  }
 </style>
 </head>
 <body>
+
+<button class="corner-install" id="install-btn" hidden>Install app</button>
+<div id="offline-banner" role="status" aria-live="polite">You're offline — changes won't save until you reconnect.</div>
 
 <div id="auth-loading">Loading…</div>
 
@@ -6561,9 +6694,39 @@ window.initApp = async function initApp(){
 // or the browser doesn't support service workers.
 if('serviceWorker' in navigator){
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(err => console.warn('Service worker registration failed:', err));
+    navigator.serviceWorker.register('sw.js', { scope: './' }).catch(err => console.warn('Service worker registration failed:', err));
   });
 }
+
+// "Install app" button — shown only when the browser says the app can be
+// installed (Chrome / Edge / Android). On iPhone/iPad use Share → Add to Home Screen.
+(function(){
+  const btn = document.getElementById('install-btn');
+  let deferredPrompt = null;
+  const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    if(isStandalone()) return;
+    deferredPrompt = e;
+    if(btn) btn.hidden = false;
+  });
+  if(btn) btn.addEventListener('click', async () => {
+    if(!deferredPrompt) return;
+    btn.hidden = true;
+    deferredPrompt.prompt();
+    try{ await deferredPrompt.userChoice; }catch(e){}
+    deferredPrompt = null;
+  });
+  window.addEventListener('appinstalled', () => { deferredPrompt = null; if(btn) btn.hidden = true; });
+})();
+
+// Offline notice, so it's clear when edits can't reach the cloud.
+(function(){
+  const update = () => document.body.classList.toggle('is-offline', navigator.onLine === false);
+  window.addEventListener('online', update);
+  window.addEventListener('offline', update);
+  update();
+})();
 </script>
 
 </body>
