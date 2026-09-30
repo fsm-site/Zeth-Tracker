@@ -1505,6 +1505,14 @@
   .mf-egroup-head .mf-input{font-weight:700; color:var(--navy); background:transparent; border-color:transparent;}
   .mf-egroup-head .mf-input:hover{border-color:var(--line); background:#fff;}
   .mf-sub{font-weight:700; color:var(--red); white-space:nowrap; font-size:13px;}
+  .mf-4col{grid-template-columns:150px minmax(0,1fr) 130px 34px;}
+  .mf-cat{border:1px solid var(--line); border-radius:14px; padding:14px; margin-bottom:14px; background:#fff;}
+  .mf-cat-head{display:grid; grid-template-columns:minmax(0,1fr) auto 34px; gap:8px; align-items:center; margin-bottom:12px; padding-bottom:10px; border-bottom:1px solid var(--line);}
+  .mf-cat-head .mf-input{font-size:15.5px; font-weight:800; color:var(--navy); background:transparent; border-color:transparent;}
+  .mf-cat-head .mf-input:hover{border-color:var(--line); background:#fff;}
+  .mf-cat-total{font-weight:800; color:var(--red); white-space:nowrap; font-size:15px;}
+  .mf-subbar .statistics-bar-label{padding-left:14px; font-weight:500; color:var(--ink-soft);}
+  .mf-subbar .statistics-bar-track{height:7px;}
   .mf-table-wrap{overflow-x:auto; margin-bottom:10px;}
   .mf-debt-table{width:100%; min-width:860px; border-collapse:collapse; font-size:13px;}
   .mf-debt-table th{font-size:11px; font-weight:700; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.3px; text-align:left; padding:0 6px 6px;}
@@ -1551,6 +1559,14 @@
     .mf-3col{grid-template-columns:minmax(0,1fr) 110px 34px;}
     .mf-3col .mf-atype{grid-column:1 / 2; grid-row:2;}
     .mf-cols.mf-3col{display:none;}
+    .mf-4col{grid-template-columns:minmax(0,1fr) 110px 34px;}
+    .mf-4col .mf-edesc{grid-column:1 / 3; grid-row:1;}
+    .mf-4col .mf-edel{grid-column:3; grid-row:1;}
+    .mf-4col .mf-edate{grid-column:1; grid-row:2;}
+    .mf-4col .mf-eamt{grid-column:2 / 4; grid-row:2;}
+    .mf-4col.mf-row{padding-bottom:8px; border-bottom:1px dashed var(--line);}
+    .mf-cols.mf-4col{display:none;}
+    .mf-cat{padding:10px;}
   }
 </style>
 </head>
@@ -4302,14 +4318,14 @@ function whatsNextWorkspace(day, dateKey){
    Matters counter shows how many months have been tracked:
      { id:'2026-09',
        income:[{id, source, amount}],
-       expenseTypes:['Housing', ...],
-       expenses:[{id, type, description, amount}],
+       expenseCats:[{id, name:'Family Expenses', subs:[{id, name}]}, ...],
+       expenses:[{id, catId, subId, date:'2026-09-15', description, amount}],
        debts:[{id, name, balance, left, months, interest, payment}],
        assets:[{id, name, type, value}] }
    Inputs update the record in memory as you type; saving to Firestore is
    debounced so a burst of typing becomes a single write. */
 const MF_ID = 'money-monthly';
-const MF_DEFAULT_TYPES = ['Housing','Food','Transportation','Utilities'];
+const MF_DEFAULT_CATS = ['Family Expenses','Card Payables','Personal'];
 const MF_ASSET_TYPES = ['Cash','Bank Savings','Investments','Property','Vehicle','Receivables','Other'];
 const MF_TODAY = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; })();
 let mfMonth = MF_TODAY;
@@ -4341,7 +4357,7 @@ function mfBlank(key){
   return {
     id: key,
     income: [{ id: mfNewId(), source: '', amount: '' }, { id: mfNewId(), source: '', amount: '' }],
-    expenseTypes: [...MF_DEFAULT_TYPES],
+    expenseCats: MF_DEFAULT_CATS.map(name => ({ id: mfNewId(), name, subs: [] })),
     expenses: [], debts: [], assets: [],
   };
 }
@@ -4350,8 +4366,24 @@ function mfNormalize(r){
   r.expenses = Array.isArray(r.expenses) ? r.expenses : [];
   r.debts = Array.isArray(r.debts) ? r.debts : [];
   r.assets = Array.isArray(r.assets) ? r.assets : [];
-  r.expenseTypes = Array.isArray(r.expenseTypes) ? r.expenseTypes : [];
-  r.expenses.forEach(e => { if(e.type && !r.expenseTypes.includes(e.type)) r.expenseTypes.push(e.type); });
+  if(!Array.isArray(r.expenseCats)){
+    /* Older months used flat expense types (Housing, Food...). Keep that data:
+       each old type becomes a sub-category under Family Expenses. */
+    r.expenseCats = MF_DEFAULT_CATS.map(name => ({ id: mfNewId(), name, subs: [] }));
+    const family = r.expenseCats[0];
+    const types = Array.isArray(r.expenseTypes) ? [...r.expenseTypes] : [];
+    r.expenses.forEach(e => { if(e.type && !types.includes(e.type)) types.push(e.type); });
+    types.forEach(name => family.subs.push({ id: mfNewId(), name }));
+    r.expenses.forEach(e => {
+      if(e.catId) return;
+      const sub = family.subs.find(x => x.name === e.type) || family.subs[0];
+      e.catId = family.id; e.subId = sub ? sub.id : '';
+      e.date = e.date || `${r.id}-01`;
+      delete e.type;
+    });
+    delete r.expenseTypes;
+  }
+  r.expenseCats.forEach(c => { c.subs = Array.isArray(c.subs) ? c.subs : []; });
   return r;
 }
 /* Monthly payment for a debt: uses the amount typed in, or — if left blank —
@@ -4379,6 +4411,7 @@ function mfTotals(r){
 function mfCarryOver(fromKey, toKey){
   const src = JSON.parse(JSON.stringify(mfNormalize(mfRecord(fromKey))));
   ['income', 'expenses', 'assets'].forEach(list => src[list].forEach(x => { x.id = mfNewId(); }));
+  src.expenses.forEach(x => { x.date = mfMoveDate(x.date, toKey); });
   src.debts = src.debts.map(d => {
     const next = { ...d, id: mfNewId() };
     const left = mfNum(d.left);
@@ -4391,6 +4424,20 @@ function mfCarryOver(fromKey, toKey){
   src.id = toKey;
   return src;
 }
+/* Same day of the month, moved into month `key` (clamped to the month's last day). */
+function mfMoveDate(date, key){
+  const day = Number(String(date || '').slice(8, 10)) || 1;
+  const [y, m] = key.split('-').map(Number);
+  const last = new Date(y, m, 0).getDate();
+  return `${key}-${String(Math.min(day, last)).padStart(2, '0')}`;
+}
+/* Default date for a new expense: today if you're on this month, else the 1st. */
+function mfDefaultDate(){
+  const d = new Date();
+  return mfMonth === MF_TODAY ? `${MF_TODAY}-${String(d.getDate()).padStart(2, '0')}` : `${mfMonth}-01`;
+}
+function mfCatTotal(rec, catId){ return rec.expenses.filter(e => e.catId === catId).reduce((s, e) => s + mfNum(e.amount), 0); }
+function mfSubTotal(rec, subId){ return rec.expenses.filter(e => e.subId === subId).reduce((s, e) => s + mfNum(e.amount), 0); }
 function mfPrevRecorded(key){
   const keys = mfAll().map(r => r.id).filter(k => k < key).sort();
   return keys[keys.length - 1] || null;
@@ -4447,7 +4494,7 @@ function buildMonthlyFinPanel(item, groupLabel){
         <div id="mf-chart-trend"></div>
       </div>
       <div class="mf-charts">
-        <div class="statistics-chart-card"><h3 id="mf-bytype-title">Expenses by Type</h3><div id="mf-chart-bytype"></div></div>
+        <div class="statistics-chart-card"><h3 id="mf-bytype-title">Expenses by Category</h3><div id="mf-chart-bytype"></div></div>
         <div class="statistics-chart-card">
           <h3>Net Worth</h3>
           <div class="mf-legend">
@@ -4497,7 +4544,7 @@ async function renderMonthlyFinPanel(){
         <section class="mf-card expense mf-span2">
           <div class="mf-card-head"><h2>Expenses</h2><span class="mf-card-total" data-mf-total="expenses"></span></div>
           <div id="mf-rows-expenses">${mfExpenseGroups(rec)}</div>
-          <button class="mf-add solid" data-mf-add="type">+ Add expense type</button>
+          <button class="mf-add solid" data-mf-add="cat">+ Add category</button>
         </section>
         <section class="mf-card debt mf-span2">
           <div class="mf-card-head"><h2>Debts to Pay</h2><span class="mf-card-total" data-mf-total="debts"></span></div>
@@ -4542,25 +4589,36 @@ function mfAssetRows(rec){
     </div>`).join('') || `<div class="rs-sub" style="margin-bottom:8px;">No assets yet.</div>`;
 }
 function mfExpenseGroups(rec){
-  return rec.expenseTypes.map(type => {
-    const items = rec.expenses.filter(e => e.type === type);
-    return `
-      <div class="mf-egroup" data-mf-group="${escapeHtml(type)}">
-        <div class="mf-egroup-head">
-          <input class="mf-input" data-mf-type-name="${escapeHtml(type)}" value="${escapeHtml(type)}" aria-label="Expense type name">
-          <span class="mf-sub" data-mf-subtotal="${escapeHtml(type)}"></span>
-          <button class="mf-del" data-mf-del-type="${escapeHtml(type)}" aria-label="Remove ${escapeHtml(type)}">×</button>
-        </div>
-        ${items.length ? `<div class="mf-cols mf-2col"><span>Description</span><span class="r">Amount</span><span></span></div>` : ''}
-        ${items.map(e => `
-          <div class="mf-row mf-2col" data-mf-list="expenses" data-mf-id="${e.id}">
-            <input class="mf-input" data-mf-f="description" placeholder="Description" aria-label="${escapeHtml(type)} expense description" value="${escapeHtml(e.description)}">
-            <input class="mf-input" type="number" inputmode="decimal" step="0.01" min="0" data-mf-f="amount" placeholder="0.00" aria-label="${escapeHtml(type)} expense amount" value="${escapeHtml(e.amount)}">
-            <button class="mf-del" data-mf-del aria-label="Remove expense">×</button>
-          </div>`).join('')}
-        <button class="mf-add" data-mf-add="expense" data-mf-type="${escapeHtml(type)}">+ Add more</button>
-      </div>`;
-  }).join('') || `<div class="rs-sub" style="margin-bottom:8px;">No expense types yet.</div>`;
+  return rec.expenseCats.map(cat => `
+    <div class="mf-cat" data-mf-cat="${cat.id}">
+      <div class="mf-cat-head">
+        <input class="mf-input" data-mf-cat-name="${cat.id}" value="${escapeHtml(cat.name)}" placeholder="Category name" aria-label="Category name">
+        <span class="mf-cat-total" data-mf-subtotal-cat="${cat.id}"></span>
+        <button class="mf-del" data-mf-del-cat="${cat.id}" aria-label="Remove ${escapeHtml(cat.name)}">×</button>
+      </div>
+      ${cat.subs.length ? cat.subs.map(sub => {
+        const items = rec.expenses.filter(e => e.subId === sub.id)
+          .sort((a, b) => (a.date || '9999') < (b.date || '9999') ? -1 : (a.date || '9999') > (b.date || '9999') ? 1 : 0);
+        return `
+        <div class="mf-egroup" data-mf-sub="${sub.id}">
+          <div class="mf-egroup-head">
+            <input class="mf-input" data-mf-sub-name="${sub.id}" data-mf-cat-of="${cat.id}" value="${escapeHtml(sub.name)}" placeholder="Sub-category name" aria-label="Sub-category name">
+            <span class="mf-sub" data-mf-subtotal-sub="${sub.id}"></span>
+            <button class="mf-del" data-mf-del-sub="${sub.id}" data-mf-cat-of="${cat.id}" aria-label="Remove ${escapeHtml(sub.name)}">×</button>
+          </div>
+          ${items.length ? `<div class="mf-cols mf-4col"><span>Date</span><span>Description</span><span class="r">Amount</span><span></span></div>` : ''}
+          ${items.map(e => `
+            <div class="mf-row mf-4col" data-mf-list="expenses" data-mf-id="${e.id}">
+              <input class="mf-input mf-edate" type="date" data-mf-f="date" aria-label="Date" value="${escapeHtml(e.date)}">
+              <input class="mf-input mf-edesc" data-mf-f="description" placeholder="Description" aria-label="Description" value="${escapeHtml(e.description)}">
+              <input class="mf-input mf-eamt" type="number" inputmode="decimal" step="0.01" min="0" data-mf-f="amount" placeholder="0.00" aria-label="Amount" value="${escapeHtml(e.amount)}">
+              <button class="mf-del mf-edel" data-mf-del aria-label="Remove expense">×</button>
+            </div>`).join('')}
+          <button class="mf-add" data-mf-add="expense" data-mf-cat-of="${cat.id}" data-mf-sub-of="${sub.id}">+ Add more</button>
+        </div>`;
+      }).join('') : `<div class="rs-sub" style="margin:0 0 10px;">Add a sub-category to start logging expenses here.</div>`}
+      <button class="mf-add solid" data-mf-add="sub" data-mf-cat-of="${cat.id}">+ Add sub-category</button>
+    </div>`).join('') || `<div class="rs-sub" style="margin-bottom:8px;">No categories yet.</div>`;
 }
 function mfDebtTable(rec){
   if(!rec.debts.length) return `<div class="rs-sub" style="margin-bottom:8px;">No debts added. Good place to be.</div>`;
@@ -4620,10 +4678,8 @@ function mfUpdateTotals(){
   set('[data-mf-total="expenses"]', mfMoney(t.expenses));
   set('[data-mf-total="debts"]', mfMoney(t.debtPay) + ' / mo');
   set('[data-mf-total="assets"]', mfMoney(t.assets));
-  document.querySelectorAll('[data-mf-subtotal]').forEach(el => {
-    const type = el.dataset.mfSubtotal;
-    el.textContent = mfMoney(rec.expenses.filter(e => e.type === type).reduce((s, e) => s + mfNum(e.amount), 0));
-  });
+  document.querySelectorAll('[data-mf-subtotal-cat]').forEach(el => { el.textContent = mfMoney(mfCatTotal(rec, el.dataset.mfSubtotalCat)); });
+  document.querySelectorAll('[data-mf-subtotal-sub]').forEach(el => { el.textContent = mfMoney(mfSubTotal(rec, el.dataset.mfSubtotalSub)); });
 }
 
 /* ---------- events ---------- */
@@ -4635,6 +4691,20 @@ function mfChanged(){
 }
 function mfOnInput(e){
   const t = e.target;
+  if(t.dataset && (t.dataset.mfCatName || t.dataset.mfSubName)){
+    const rec = mfRecord(mfMonth);
+    if(!rec) return;
+    if(t.dataset.mfCatName){
+      const cat = rec.expenseCats.find(c => c.id === t.dataset.mfCatName);
+      if(cat) cat.name = t.value;
+    }else{
+      const cat = rec.expenseCats.find(c => c.id === t.dataset.mfCatOf);
+      const sub = cat && cat.subs.find(x => x.id === t.dataset.mfSubName);
+      if(sub) sub.name = t.value;
+    }
+    mfChanged();
+    return;
+  }
   if(!t.dataset || !t.dataset.mfF) return;
   const row = t.closest('[data-mf-id]');
   const rec = mfRecord(mfMonth);
@@ -4652,17 +4722,9 @@ async function mfOnChange(e){
     await renderMonthlyFinPanel();
     return;
   }
-  if(t.dataset && t.dataset.mfTypeName !== undefined){
-    const rec = mfRecord(mfMonth);
-    const oldName = t.dataset.mfTypeName, newName = t.value.trim();
-    if(!rec) return;
-    if(!newName || newName === oldName){ t.value = oldName; return; }
-    rec.expenses.forEach(x => { if(x.type === oldName) x.type = newName; });
-    rec.expenseTypes = rec.expenseTypes.includes(newName)
-      ? rec.expenseTypes.filter(x => x !== oldName)          // merged into an existing type
-      : rec.expenseTypes.map(x => x === oldName ? newName : x);
-    document.getElementById('mf-rows-expenses').innerHTML = mfExpenseGroups(rec);
-    mfChanged();
+  if(t.dataset && (t.dataset.mfCatName || t.dataset.mfSubName) && !t.value.trim()){
+    t.value = t.dataset.mfCatName ? 'Untitled category' : 'Untitled';
+    mfOnInput({ target: t });
   }
 }
 function mfFocusLast(selector){
@@ -4721,30 +4783,53 @@ async function mfOnClick(e){
     mfFocusLast('#mf-rows-debts [data-mf-f="name"]');
     mfChanged(); return;
   }
+  const rerenderExpenses = () => { document.getElementById('mf-rows-expenses').innerHTML = mfExpenseGroups(rec); };
   if(add === 'expense'){
-    const type = b.dataset.mfType;
-    rec.expenses.push({ id: mfNewId(), type, description: '', amount: '' });
-    document.getElementById('mf-rows-expenses').innerHTML = mfExpenseGroups(rec);
-    const group = [...document.querySelectorAll('.mf-egroup')].find(g => g.dataset.mfGroup === type);
-    if(group){ const ins = group.querySelectorAll('[data-mf-f="description"]'); if(ins.length) ins[ins.length - 1].focus(); }
+    const catId = b.dataset.mfCatOf, subId = b.dataset.mfSubOf;
+    const item = { id: mfNewId(), catId, subId, date: mfDefaultDate(), description: '', amount: '' };
+    rec.expenses.push(item);
+    rerenderExpenses();
+    const row = document.querySelector(`[data-mf-list="expenses"][data-mf-id="${item.id}"] [data-mf-f="description"]`);
+    if(row) row.focus();
     mfChanged(); return;
   }
-  if(add === 'type'){
-    let name = 'New Type', n = 2;
-    while(rec.expenseTypes.includes(name)) name = 'New Type ' + (n++);
-    rec.expenseTypes.push(name);
-    document.getElementById('mf-rows-expenses').innerHTML = mfExpenseGroups(rec);
-    const last = [...document.querySelectorAll('[data-mf-type-name]')].pop();
-    if(last){ last.focus(); last.select(); }
+  if(add === 'sub'){
+    const cat = rec.expenseCats.find(c => c.id === b.dataset.mfCatOf);
+    if(!cat) return;
+    const sub = { id: mfNewId(), name: '' };
+    cat.subs.push(sub);
+    rerenderExpenses();
+    const input = document.querySelector(`[data-mf-sub-name="${sub.id}"]`);
+    if(input) input.focus();
     mfChanged(); return;
   }
-  if(b.dataset.mfDelType !== undefined){
-    const type = b.dataset.mfDelType;
-    const count = rec.expenses.filter(x => x.type === type).length;
-    if(count && !confirm(`Remove ${type} and its ${count} expense${count > 1 ? 's' : ''}?`)) return;
-    rec.expenses = rec.expenses.filter(x => x.type !== type);
-    rec.expenseTypes = rec.expenseTypes.filter(x => x !== type);
-    document.getElementById('mf-rows-expenses').innerHTML = mfExpenseGroups(rec);
+  if(add === 'cat'){
+    const cat = { id: mfNewId(), name: '', subs: [] };
+    rec.expenseCats.push(cat);
+    rerenderExpenses();
+    const input = document.querySelector(`[data-mf-cat-name="${cat.id}"]`);
+    if(input) input.focus();
+    mfChanged(); return;
+  }
+  if(b.dataset.mfDelCat){
+    const cat = rec.expenseCats.find(c => c.id === b.dataset.mfDelCat);
+    if(!cat) return;
+    const count = rec.expenses.filter(x => x.catId === cat.id).length;
+    if((count || cat.subs.length) && !confirm(`Remove ${cat.name || 'this category'}${count ? ` and its ${count} expense${count > 1 ? 's' : ''}` : ''}?`)) return;
+    rec.expenses = rec.expenses.filter(x => x.catId !== cat.id);
+    rec.expenseCats = rec.expenseCats.filter(c => c !== cat);
+    rerenderExpenses();
+    mfChanged(); return;
+  }
+  if(b.dataset.mfDelSub){
+    const cat = rec.expenseCats.find(c => c.id === b.dataset.mfCatOf);
+    const sub = cat && cat.subs.find(x => x.id === b.dataset.mfDelSub);
+    if(!sub) return;
+    const count = rec.expenses.filter(x => x.subId === sub.id).length;
+    if(count && !confirm(`Remove ${sub.name || 'this sub-category'} and its ${count} expense${count > 1 ? 's' : ''}?`)) return;
+    rec.expenses = rec.expenses.filter(x => x.subId !== sub.id);
+    cat.subs = cat.subs.filter(x => x !== sub);
+    rerenderExpenses();
     mfChanged(); return;
   }
   if(b.hasAttribute('data-mf-del')){
@@ -4809,19 +4894,23 @@ function mfDrawCharts(){
 
   // 2) this month's expenses by type
   const typeTitle = document.getElementById('mf-bytype-title');
-  if(typeTitle) typeTitle.textContent = `Expenses by Type · ${mfLabel(mfMonth)}`;
+  if(typeTitle) typeTitle.textContent = `Expenses by Category · ${mfLabel(mfMonth)}`;
   const byTypeEl = document.getElementById('mf-chart-bytype');
   const rec = mfRecord(mfMonth);
-  const rows = rec ? rec.expenseTypes.map(type => [type, rec.expenses.filter(e => e.type === type).reduce((s, e) => s + mfNum(e.amount), 0)]).filter(r => r[1] > 0).sort((a, b) => b[1] - a[1]) : [];
   if(byTypeEl){
-    const max = rows.length ? rows[0][1] : 0;
-    byTypeEl.innerHTML = rows.length
-      ? `<div class="statistics-bar-list">${rows.map(([type, v]) => `
-          <div class="statistics-bar-row">
-            <span class="statistics-bar-label" title="${escapeHtml(type)}">${escapeHtml(type)}</span>
-            <span class="statistics-bar-track"><span class="statistics-bar-fill" style="display:block; width:${(v / max * 100).toFixed(1)}%; background:var(--red);"></span></span>
-            <span class="statistics-bar-value">${mfMoney(v)}</span>
-          </div>`).join('')}</div>`
+    const cats = rec ? rec.expenseCats.map(c => ({
+      name: c.name || 'Untitled category', total: mfCatTotal(rec, c.id),
+      subs: c.subs.map(sb => ({ name: sb.name || 'Untitled', total: mfSubTotal(rec, sb.id) })).filter(x => x.total > 0).sort((a, b) => b.total - a.total),
+    })).filter(c => c.total > 0).sort((a, b) => b.total - a.total) : [];
+    const max = cats.length ? cats[0].total : 0;
+    const bar = (name, v, sub) => `
+      <div class="statistics-bar-row${sub ? ' mf-subbar' : ''}">
+        <span class="statistics-bar-label" title="${escapeHtml(name)}">${escapeHtml(name)}</span>
+        <span class="statistics-bar-track"><span class="statistics-bar-fill" style="display:block; width:${(v / max * 100).toFixed(1)}%; background:${sub ? '#e59a90' : 'var(--red)'};"></span></span>
+        <span class="statistics-bar-value">${mfMoney(v)}</span>
+      </div>`;
+    byTypeEl.innerHTML = cats.length
+      ? `<div class="statistics-bar-list">${cats.map(c => bar(c.name, c.total, false) + c.subs.map(sb => bar(sb.name, sb.total, true)).join('')).join('')}</div>`
       : '<div class="mf-chart-empty">No expenses entered for this month yet.</div>';
   }
 
